@@ -11,11 +11,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 
 import android.view.WindowManager;
@@ -54,6 +56,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+
         // hide keyboard by default
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
@@ -89,6 +92,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         loadProfileData();
     }
+
 
 
     private boolean hasReadPermission() {
