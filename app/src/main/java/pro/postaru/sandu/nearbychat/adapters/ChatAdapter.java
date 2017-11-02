@@ -17,7 +17,7 @@ import java.util.List;
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.models.ChatMessage;
 
-public class ConversationAdapter extends ArrayAdapter<ChatMessage> {
+public class ChatAdapter extends ArrayAdapter<ChatMessage> {
 
     private final Activity activity;
 
@@ -25,7 +25,7 @@ public class ConversationAdapter extends ArrayAdapter<ChatMessage> {
 
     private final List<ChatMessage> messages;
 
-    public ConversationAdapter(@NonNull Activity activity, @LayoutRes int resource, @NonNull List<ChatMessage> messages) {
+    public ChatAdapter(@NonNull Activity activity, @LayoutRes int resource, @NonNull List<ChatMessage> messages) {
         super(activity, resource, messages);
 
         this.activity = activity;

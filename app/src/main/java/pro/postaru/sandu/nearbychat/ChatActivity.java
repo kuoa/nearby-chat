@@ -1,12 +1,10 @@
 package pro.postaru.sandu.nearbychat;
 
 import android.os.Bundle;
-import android.os.Message;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -14,17 +12,22 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
-import pro.postaru.sandu.nearbychat.adapters.ConversationAdapter;
+import pro.postaru.sandu.nearbychat.adapters.ChatAdapter;
 import pro.postaru.sandu.nearbychat.models.ChatMessage;
+import pro.postaru.sandu.nearbychat.models.UserProfile;
 
 public class ChatActivity extends AppCompatActivity {
 
+    public static final String CHAT_PARTNER_ID = "CHAT_PARTNER";
+
     private List<ChatMessage> currentMessages;
 
-    private ConversationAdapter conversationAdapter;
+    private ChatAdapter chatAdapter;
 
     private EditText messageEditView;
     private ImageButton messageSendButton;
+
+    private UserProfile conversationPartner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +47,15 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        // get conversation partner
+        conversationPartner = (UserProfile) getIntent().getExtras().get(CHAT_PARTNER_ID);
+
+        // set conversation title
+        setTitle(conversationPartner.getUserName());
+
+        // hide keyboard by default
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
         currentMessages = new ArrayList<>();
 
         for(int i = 0; i < 20; i++){
@@ -53,10 +65,10 @@ public class ChatActivity extends AppCompatActivity {
             currentMessages.add(message);
         }
 
-        conversationAdapter = new ConversationAdapter(this, R.layout.chat_entry, currentMessages);
+        chatAdapter = new ChatAdapter(this, R.layout.chat_entry, currentMessages);
 
         ListView messageListView = (ListView) findViewById(R.id.message_list);
-        messageListView.setAdapter(conversationAdapter);
+        messageListView.setAdapter(chatAdapter);
         messageListView.setSelection(currentMessages.size() - 1);
     }
 
@@ -69,7 +81,7 @@ public class ChatActivity extends AppCompatActivity {
         message.setMyMessage(true);
         message.setText(content);
 
-        conversationAdapter.add(message);
+        chatAdapter.add(message);
     }
 
 }

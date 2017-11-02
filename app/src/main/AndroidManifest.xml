@@ -25,10 +25,15 @@
         <activity
             android:name=".ProfileActivity"
             android:label="@string/title_activity_profile" />
+
+        <activity
+            android:name=".ActiveUsersActivity"
+            android:label="@string/title_activity_active_users" />
+
         <activity
             android:name=".ChatActivity"
             android:label="@string/title_activity_chat"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

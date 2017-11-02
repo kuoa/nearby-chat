@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
@@ -25,7 +26,10 @@ import android.widget.Toast;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private static int RESULT_LOAD_IMAGE = 1;
+    private static final int RESULT_LOAD_IMAGE = 1;
+
+    private static final String[] READ_STORAGE_PERMISSION =
+            {Manifest.permission.READ_EXTERNAL_STORAGE};
 
     private final Activity activity = this;
 
@@ -34,6 +38,7 @@ public class ProfileActivity extends AppCompatActivity {
     private View updateProfileView;
     private Button updateProfileButton;
     private ImageView profileImage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,12 +63,11 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1){
-                    if(!hasReadPerimission()){
-                        ActivityCompat.requestPermissions(activity,
-                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
-                    }
-                    else{
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    if (!hasReadPerimission()) {
+                        ActivityCompat.requestPermissions(activity, READ_STORAGE_PERMISSION
+                                , 1);
+                    } else {
                         pickProfileImage();
                     }
                 }
@@ -106,7 +110,7 @@ public class ProfileActivity extends AppCompatActivity {
     /**
      * Sets a new profile picture for the user
      */
-    private void pickProfileImage(){
+    private void pickProfileImage() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, RESULT_LOAD_IMAGE);
     }
@@ -163,10 +167,9 @@ public class ProfileActivity extends AppCompatActivity {
             cancel = true;
         }
 
-        if(cancel){
+        if (cancel) {
             focusView.requestFocus();
-        }
-        else{
+        } else {
             //TODO update information
         }
 
