@@ -1,8 +1,14 @@
 package pro.postaru.sandu.nearbychat;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,12 +18,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -28,13 +37,26 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               scanNetwork();
+                scanNetwork();
             }
         });
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+
+            // set the user profile info when the drawer is opening
+            @Override
+            public void onDrawerStateChanged(int newState) {
+                if (newState == DrawerLayout.STATE_SETTLING) {
+                    // opening
+                    if (!drawer.isDrawerOpen(Gravity.LEFT)) {
+                        fillDrawerUserProfile(drawer);
+                    }
+                }
+            }
+        };
+
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -42,9 +64,33 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    public void scanNetwork(){
+    public void scanNetwork() {
         Intent intent = new Intent(this, ActiveUsersActivity.class);
         startActivity(intent);
+    }
+
+    /**
+     * Fills the user information in the drawer panel
+     * @param drawerView the drawer panel
+     */
+    public void fillDrawerUserProfile(View drawerView) {
+
+        TextView drawerUserNameView = (TextView) drawerView.findViewById(R.id.drawer_user_name);
+        TextView drawerUserBioView = (TextView) drawerView.findViewById(R.id.drawer_user_bio);
+        ImageView drawerUserAvatarView = (ImageView) drawerView.findViewById(R.id.drawer_user_avatar);
+
+        SharedPreferences profile = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
+
+        String profileUserName = profile.getString(ProfileActivity.USER_NAME_KEY, "User name (default)");
+        String profileBio = profile.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)");
+        String avatarPath = profile.getString(ProfileActivity.USER_AVATAR_KEY, "");
+
+        drawerUserNameView.setText(profileUserName);
+        drawerUserBioView.setText(profileBio);
+
+        if(avatarPath != ""){
+            drawerUserAvatarView.setImageBitmap(BitmapFactory.decodeFile(avatarPath));
+        }
     }
 
     @Override
@@ -87,8 +133,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.profile) {
             Intent intent = new Intent(this, ProfileActivity.class);
             startActivity(intent);
-        }
-        else{
+        } else {
             return false;
         }
 

@@ -42,7 +42,7 @@
                     android:layout_height="100dp"
                     android:scaleType="centerCrop"
                     android:layout_centerHorizontal="true"
-                    app:srcCompat="@drawable/ic_face_black"/>
+                    app:srcCompat="@android:drawable/sym_def_app_icon"/>
 
                 <ImageView
                     android:layout_width="25dp"

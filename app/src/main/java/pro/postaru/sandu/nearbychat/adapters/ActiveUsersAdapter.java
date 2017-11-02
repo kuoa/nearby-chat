@@ -66,7 +66,7 @@ public class ActiveUsersAdapter extends ArrayAdapter<UserProfile>{
         Intent intent = new Intent(activity, ChatActivity.class);
 
         // conversation partner
-        intent.putExtra(ChatActivity.CHAT_PARTNER_ID, user);
+        intent.putExtra(ChatActivity.CHAT_PARTNER_KEY, user);
 
         activity.startActivity(intent);
     }

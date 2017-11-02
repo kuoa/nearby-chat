@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">Nearby Chat</string>
 
+    <string name="profile_updated_text">Your profile has been updated</string>
+
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 

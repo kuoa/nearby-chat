@@ -18,7 +18,7 @@ import pro.postaru.sandu.nearbychat.models.UserProfile;
 
 public class ChatActivity extends AppCompatActivity {
 
-    public static final String CHAT_PARTNER_ID = "CHAT_PARTNER";
+    public static final String CHAT_PARTNER_KEY = "pro.postaru.sandu.nearbychat.CHAT_PARTNER";
 
     private List<ChatMessage> currentMessages;
 
@@ -48,7 +48,7 @@ public class ChatActivity extends AppCompatActivity {
         });
 
         // get conversation partner
-        conversationPartner = (UserProfile) getIntent().getExtras().get(CHAT_PARTNER_ID);
+        conversationPartner = (UserProfile) getIntent().getExtras().get(CHAT_PARTNER_KEY);
 
         // set conversation title
         setTitle(conversationPartner.getUserName());

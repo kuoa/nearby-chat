@@ -3,9 +3,9 @@ package pro.postaru.sandu.nearbychat;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 
+import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,6 +26,12 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 public class ProfileActivity extends AppCompatActivity {
+
+    public static final String USER_INFO_PREFS = "pro.postaru.sandu.nearbychat.USER_INFO_PREFS";
+
+    public static final String USER_NAME_KEY = "pro.postaru.sandu.nearbychat.USER_NAME";
+    public static final String USER_BIO_KEY = "pro.postaru.sandu.nearbychat.BIO";
+    public static final String USER_AVATAR_KEY = "pro.postaru.sandu.nearbychat.AVATAR";
 
     private static final int RESULT_LOAD_IMAGE = 1;
 
@@ -35,15 +42,22 @@ public class ProfileActivity extends AppCompatActivity {
 
     private AutoCompleteTextView userNameView;
     private EditText userBioView;
-    private View updateProfileView;
     private Button updateProfileButton;
     private ImageView profileImage;
 
+    private SharedPreferences profile;
+
+    private String picturePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
+        // hide keyboard by default
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+
+        profile = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
 
         userNameView = (AutoCompleteTextView) findViewById(R.id.username);
         userBioView = (EditText) findViewById(R.id.bio);
@@ -53,10 +67,9 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 saveProfileData();
+                Toast.makeText(activity, getString(R.string.profile_updated_text), Toast.LENGTH_LONG).show();
             }
         });
-
-        updateProfileView = findViewById(R.id.profile_form);
 
         profileImage = (ImageView) findViewById(R.id.profile_image);
         profileImage.setOnClickListener(new View.OnClickListener() {
@@ -64,7 +77,7 @@ public class ProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-                    if (!hasReadPerimission()) {
+                    if (!hasReadPermission()) {
                         ActivityCompat.requestPermissions(activity, READ_STORAGE_PERMISSION
                                 , 1);
                     } else {
@@ -74,18 +87,11 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
-        populateUserProfile();
-    }
-
-    /**
-     * Fills the image and user information
-     */
-    private void populateUserProfile() {
-        //TODO populate user informations
+        loadProfileData();
     }
 
 
-    private boolean hasReadPerimission() {
+    private boolean hasReadPermission() {
         int result = ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return result == PackageManager.PERMISSION_GRANTED;
     }
@@ -115,7 +121,6 @@ public class ProfileActivity extends AppCompatActivity {
         startActivityForResult(intent, RESULT_LOAD_IMAGE);
     }
 
-
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -128,11 +133,27 @@ public class ProfileActivity extends AppCompatActivity {
             cursor.moveToFirst();
 
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
+            picturePath = cursor.getString(columnIndex);
             cursor.close();
 
-
             profileImage.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+        }
+    }
+
+    /**
+     * Loads the user profile and fills the image and user information
+     */
+    private void loadProfileData() {
+
+        String profileUserName = profile.getString(ProfileActivity.USER_NAME_KEY, "User name (default)");
+        String profileBio = profile.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)");
+        String avatarPath = profile.getString(ProfileActivity.USER_AVATAR_KEY, "");
+
+        userNameView.setText(profileUserName);
+        userBioView.setText(profileBio);
+
+        if(avatarPath != ""){
+            profileImage.setImageBitmap(BitmapFactory.decodeFile(avatarPath));
         }
     }
 
@@ -170,7 +191,13 @@ public class ProfileActivity extends AppCompatActivity {
         if (cancel) {
             focusView.requestFocus();
         } else {
-            //TODO update information
+            SharedPreferences.Editor editor = profile.edit();
+
+            editor.putString(ProfileActivity.USER_NAME_KEY, userName);
+            editor.putString(ProfileActivity.USER_BIO_KEY, userBio);
+            editor.putString(ProfileActivity.USER_AVATAR_KEY, picturePath);
+
+            editor.commit();
         }
 
     }
