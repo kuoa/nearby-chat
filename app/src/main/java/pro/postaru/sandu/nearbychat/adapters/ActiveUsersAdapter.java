@@ -18,7 +18,7 @@ import pro.postaru.sandu.nearbychat.ChatActivity;
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 
-public class ActiveUsersAdapter extends ArrayAdapter<UserProfile>{
+public class ActiveUsersAdapter extends ArrayAdapter<UserProfile> {
 
     private final Activity activity;
 
@@ -35,9 +35,9 @@ public class ActiveUsersAdapter extends ArrayAdapter<UserProfile>{
     }
 
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-        if(convertView == null){
+        if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(getContext());
             convertView = inflater.inflate(layoutResource, null);
         }
@@ -52,17 +52,13 @@ public class ActiveUsersAdapter extends ArrayAdapter<UserProfile>{
         userBio.setText(user.getBio());
         userAvatar.setImageBitmap(user.getAvatar());
 
-        convertView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                launchConversationWithUser(user);
-            }
-        });
+        convertView.setOnClickListener(v -> launchConversationWithUser(user));
 
         return convertView;
     }
 
-    private void launchConversationWithUser(UserProfile user){
+    private void launchConversationWithUser(UserProfile user) {
+
         Intent intent = new Intent(activity, ChatActivity.class);
 
         // conversation partner
