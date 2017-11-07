@@ -1,4 +1,4 @@
-package pro.postaru.sandu.nearbychat;
+package pro.postaru.sandu.nearbychat.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +11,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
+import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.adapters.ChatAdapter;
 import pro.postaru.sandu.nearbychat.models.ChatMessage;
 import pro.postaru.sandu.nearbychat.models.UserProfile;

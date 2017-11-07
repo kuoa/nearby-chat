@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import pro.postaru.sandu.nearbychat.ChatActivity;
+import pro.postaru.sandu.nearbychat.activities.ChatActivity;
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 

@@ -1,13 +1,12 @@
 package pro.postaru.sandu.nearbychat;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.util.Log;
+import android.support.v4.app.FragmentTransaction;
 import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -21,9 +20,13 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import pro.postaru.sandu.nearbychat.activities.ActiveUsersActivity;
+import pro.postaru.sandu.nearbychat.activities.ProfileActivity;
+import pro.postaru.sandu.nearbychat.fragments.LoginFragment;
+
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, LoginFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -62,6 +65,17 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        // Replace the contents of the container with the new fragment
+        ft.replace(R.id.fragment_container, LoginFragment.newInstance());
+        // or ft.add(R.id.your_placeholder, new FooFragment());
+        // Complete the changes added above
+        ft.commit();
+
+
     }
 
     public void scanNetwork() {
@@ -71,6 +85,7 @@ public class MainActivity extends AppCompatActivity
 
     /**
      * Fills the user information in the drawer panel
+     *
      * @param drawerView the drawer panel
      */
     public void fillDrawerUserProfile(View drawerView) {
@@ -88,7 +103,7 @@ public class MainActivity extends AppCompatActivity
         drawerUserNameView.setText(profileUserName);
         drawerUserBioView.setText(profileBio);
 
-        if(avatarPath != ""){
+        if (avatarPath != "") {
             drawerUserAvatarView.setImageBitmap(BitmapFactory.decodeFile(avatarPath));
         }
     }
@@ -140,5 +155,10 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }

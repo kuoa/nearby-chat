@@ -5,6 +5,9 @@
     <!-- permision for selecting a user image -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+    <!-- To access Google+ APIs: -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -22,29 +25,26 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
-            android:name=".ProfileActivity"
+            android:name=".activities.ProfileActivity"
             android:label="@string/title_activity_profile">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-
         <activity
-            android:name=".ActiveUsersActivity"
-            android:label="@string/title_activity_active_users" >
+            android:name=".activities.ActiveUsersActivity"
+            android:label="@string/title_activity_active_users">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-
         <activity
-            android:name=".ChatActivity"
+            android:name=".activities.ChatActivity"
             android:label="@string/title_activity_chat">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ActiveUsersActivity" />
+                android:value=".activities.ActiveUsersActivity" />
         </activity>
     </application>
 
