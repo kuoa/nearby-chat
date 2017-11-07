@@ -10,22 +10,24 @@ import android.view.ViewGroup;
 
 import pro.postaru.sandu.nearbychat.R;
 
-public class LoginFragment extends Fragment {
+/**
+ * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link RegisterFragment.OnFragmentInteractionListener} interface
+ * to handle interaction events.
+ * Use the {@link RegisterFragment#newInstance} factory method to
+ * create an instance of this fragment.
+ */
+public class RegisterFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public LoginFragment() {
+    public RegisterFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment LoginFragment.
-     */
-    public static LoginFragment newInstance() {
-        LoginFragment fragment = new LoginFragment();
+    public static RegisterFragment newInstance(String param1, String param2) {
+        RegisterFragment fragment = new RegisterFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -40,14 +42,14 @@ public class LoginFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_login, container, false);
-
-        return view;
+        return inflater.inflate(R.layout.fragment_register, container, false);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
+    // TODO: Rename method, update argument and hook method into UI event
+    public void onButtonPressed(Uri uri) {
+        if (mListener != null) {
+            mListener.onFragmentInteraction(uri);
+        }
     }
 
     @Override
@@ -71,5 +73,4 @@ public class LoginFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-
 }

@@ -2,7 +2,6 @@ package pro.postaru.sandu.nearbychat.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -37,12 +36,7 @@ public class ChatActivity extends AppCompatActivity {
         messageEditView = (EditText) findViewById(R.id.message_edit);
 
         messageSendButton = (ImageButton) findViewById(R.id.message_send);
-        messageSendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage();
-            }
-        });
+        messageSendButton.setOnClickListener(v -> sendMessage());
 
         // get conversation partner
         conversationPartner = (UserProfile) getIntent().getExtras().get(CHAT_PARTNER_KEY);

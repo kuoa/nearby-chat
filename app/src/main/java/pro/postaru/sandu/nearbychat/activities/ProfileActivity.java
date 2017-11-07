@@ -9,15 +9,13 @@ import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-
 import android.text.TextUtils;
 import android.view.View;
-
 import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -66,26 +64,20 @@ public class ProfileActivity extends AppCompatActivity {
         userBioView = (EditText) findViewById(R.id.bio);
 
         updateProfileButton = (Button) findViewById(R.id.update_profile_button);
-        updateProfileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveProfileData();
-                Toast.makeText(activity, getString(R.string.profile_updated_text), Toast.LENGTH_LONG).show();
-            }
+        updateProfileButton.setOnClickListener(v -> {
+            saveProfileData();
+            Toast.makeText(activity, getString(R.string.profile_updated_text), Toast.LENGTH_LONG).show();
         });
 
         profileImage = (ImageView) findViewById(R.id.profile_image);
-        profileImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        profileImage.setOnClickListener(v -> {
 
-                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
-                    if (!hasReadPermission()) {
-                        ActivityCompat.requestPermissions(activity, READ_STORAGE_PERMISSION
-                                , 1);
-                    } else {
-                        pickProfileImage();
-                    }
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+                if (!hasReadPermission()) {
+                    ActivityCompat.requestPermissions(activity, READ_STORAGE_PERMISSION
+                            , 1);
+                } else {
+                    pickProfileImage();
                 }
             }
         });

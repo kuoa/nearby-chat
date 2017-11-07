@@ -20,13 +20,18 @@
     <string name="error_invalid_bio">This bio is too long</string>
     <string name="error_field_required">This field is required</string>
 
-    <!-- Strings related to user login -->
+    <!-- Strings related to user login and registration -->
     <string name="prompt_login_username">User name</string>
     <string name="prompt_login_pass">Password</string>
+    <string name="prompt_login_email">Email</string>
+
     <string name="action_login">Login</string>
 
     <!-- Strings related to permissions -->
     <string name="profile_image_permission">This permission is needed in order to select a profile image</string>
     <string name="typeMessage">Send text</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>
