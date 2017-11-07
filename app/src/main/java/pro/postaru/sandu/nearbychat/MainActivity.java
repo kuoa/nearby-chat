@@ -3,30 +3,33 @@ package pro.postaru.sandu.nearbychat;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.FragmentTransaction;
-import android.view.Gravity;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import pro.postaru.sandu.nearbychat.activities.ActiveUsersActivity;
 import pro.postaru.sandu.nearbychat.activities.ProfileActivity;
 import pro.postaru.sandu.nearbychat.fragments.LoginFragment;
+import pro.postaru.sandu.nearbychat.fragments.RegisterFragment;
 
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, LoginFragment.OnFragmentInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        LoginFragment.OnFragmentInteractionListener,
+        RegisterFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -67,15 +70,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
 
-
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        // Replace the contents of the container with the new fragment
-        ft.replace(R.id.fragment_container, LoginFragment.newInstance());
-        // or ft.add(R.id.your_placeholder, new FooFragment());
-        // Complete the changes added above
-        ft.commit();
-
-
+        mountLoginFragment();
     }
 
     public void scanNetwork() {
@@ -157,8 +152,32 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    public void onFragmentInteraction(Uri uri) {
 
+    @Override
+    public boolean requestLogin(String username, String password) {
+
+        Toast.makeText(getApplicationContext(), "Login requested", Toast.LENGTH_LONG).show();
+        return false;
+    }
+
+    @Override
+    public boolean requestRegister(String username, String email, String password) {
+        Toast.makeText(getApplicationContext(), "Register requested", Toast.LENGTH_LONG).show();
+        return false;
+    }
+
+    @Override
+    public void mountLoginFragment() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, LoginFragment.newInstance());
+        ft.commit();
+    }
+
+
+    @Override
+    public void mountRegisterFragment() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, RegisterFragment.newInstance());
+        ft.commit();
     }
 }

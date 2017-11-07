@@ -11,9 +11,9 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="pro.postaru.sandu.nearbychat.activities.ProfileActivity">
 
-    <!-- Login progress -->
+    <!-- Profile update progress -->
     <ProgressBar
-        android:id="@+id/login_progress"
+        android:id="@+id/profile_progress"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -21,7 +21,6 @@
         android:visibility="gone" />
 
     <ScrollView
-        android:id="@+id/login_form"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -53,10 +52,13 @@
                     app:srcCompat="@drawable/ic_add_a_photo_black"
                     android:tint="@color/colorAccent"/>
 
-
             </RelativeLayout>
 
-
+            <LinearLayout
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:layout_width="0px"
+                android:layout_height="0px" />
 
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
@@ -81,7 +83,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_bio"
-                    android:imeActionId="@+id/login"
                     android:imeActionLabel="@string/action_update"
                     android:imeOptions="actionUnspecified"
                     android:inputType="text"
@@ -97,7 +98,6 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/action_update"
                 android:textStyle="bold" />
-
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

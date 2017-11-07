@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import pro.postaru.sandu.nearbychat.R;
+import pro.postaru.sandu.nearbychat.utils.DataValidator;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -163,29 +164,25 @@ public class ProfileActivity extends AppCompatActivity {
         String userName = userNameView.getText().toString();
         String userBio = userBioView.getText().toString();
 
-        boolean cancel = false;
-        View focusView = null;
+        View errorView = null;
 
         // Check for a valid bio, if the user entered one.
-        if (!TextUtils.isEmpty(userBio) && !isBioValid(userBio)) {
+        if (!TextUtils.isEmpty(userBio) && !DataValidator.isBioValid(userBio)) {
             userBioView.setError(getString(R.string.error_invalid_bio));
-            focusView = userBioView;
-            cancel = true;
+            errorView = userBioView;
         }
 
-        // Check for a valid email address.
+        // Check for a valid username.
         if (TextUtils.isEmpty(userName)) {
             userNameView.setError(getString(R.string.error_field_required));
-            focusView = userNameView;
-            cancel = true;
-        } else if (!isUsernameValid(userName)) {
+            errorView = userNameView;
+        } else if (!DataValidator.isUsernameValid(userName)) {
             userNameView.setError(getString(R.string.error_invalid_username));
-            focusView = userNameView;
-            cancel = true;
+            errorView = userNameView;
         }
 
-        if (cancel) {
-            focusView.requestFocus();
+        if (errorView != null) {
+            errorView.requestFocus();
         } else {
             SharedPreferences.Editor editor = profile.edit();
 
@@ -198,13 +195,6 @@ public class ProfileActivity extends AppCompatActivity {
 
     }
 
-    private boolean isUsernameValid(String email) {
-        return email.length() < 25;
-    }
-
-    private boolean isBioValid(String password) {
-        return password.length() < 40;
-    }
 
 }
 

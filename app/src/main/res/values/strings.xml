@@ -18,6 +18,11 @@
     <string name="action_update">Update profile</string>
     <string name="error_invalid_username">This user name is too long</string>
     <string name="error_invalid_bio">This bio is too long</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_different_passwords">The passwords don\'t match</string>
+    <string name="error_invalid_email">This email is not valid</string>
+
+
     <string name="error_field_required">This field is required</string>
 
     <!-- Strings related to user login and registration -->
@@ -26,6 +31,10 @@
     <string name="prompt_login_email">Email</string>
 
     <string name="action_login">Login</string>
+    <string name="action_new_account">New account</string>
+
+    <string name="action_register">Register</string>
+    <string name="action_existing_account">Existing account</string>
 
     <!-- Strings related to permissions -->
     <string name="profile_image_permission">This permission is needed in order to select a profile image</string>
