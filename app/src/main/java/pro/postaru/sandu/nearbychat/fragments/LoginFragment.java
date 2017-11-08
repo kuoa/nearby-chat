@@ -3,7 +3,6 @@ package pro.postaru.sandu.nearbychat.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +17,7 @@ public class LoginFragment extends Fragment {
 
     private OnFragmentInteractionListener activity;
 
-    private EditText usernameView;
+    private EditText emailView;
     private EditText passwordView;
 
     private ProgressBar progressBar;
@@ -51,8 +50,8 @@ public class LoginFragment extends Fragment {
         Button loginButton = (Button) view.findViewById(R.id.login_btn);
         loginButton.setOnClickListener(view1 -> loginHandler());
 
-        usernameView = (EditText) view.findViewById(R.id.login_username);
-        usernameView.requestFocus();
+        emailView = (EditText) view.findViewById(R.id.login_email);
+        emailView.requestFocus();
 
         passwordView = (EditText) view.findViewById(R.id.login_pass);
 
@@ -85,20 +84,17 @@ public class LoginFragment extends Fragment {
 
     private void loginHandler() {
 
-        usernameView.setError(null);
+        emailView.setError(null);
         passwordView.setError(null);
 
-        String userName = usernameView.getText().toString();
+        String userEmail = emailView.getText().toString();
         String userPassword = passwordView.getText().toString();
 
         View errorView = null;
 
-        if (TextUtils.isEmpty(userName)) {
-            usernameView.setError(getString(R.string.error_field_required));
-            errorView = usernameView;
-        } else if (!DataValidator.isUsernameValid(userName)) {
-            usernameView.setError(getString(R.string.error_invalid_username));
-            errorView = usernameView;
+        if (!DataValidator.isUsernameValid(userEmail)) {
+            emailView.setError(getString(R.string.error_invalid_email));
+            errorView = emailView;
         }
 
         if (!DataValidator.isPasswordValid(userPassword)) {
@@ -109,13 +105,13 @@ public class LoginFragment extends Fragment {
         if (errorView != null) {
             errorView.requestFocus();
         } else {
-            activity.requestLogin(userName, userPassword);
+            activity.requestLogin(userEmail, userPassword);
         }
     }
 
     public interface OnFragmentInteractionListener {
 
-        boolean requestLogin(String username, String password);
+        boolean requestLogin(String email, String password);
 
         void mountRegisterFragment();
     }

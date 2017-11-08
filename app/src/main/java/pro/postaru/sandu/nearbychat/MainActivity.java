@@ -12,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,6 +20,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import pro.postaru.sandu.nearbychat.activities.ActiveUsersActivity;
 import pro.postaru.sandu.nearbychat.activities.ProfileActivity;
@@ -31,6 +35,9 @@ public class MainActivity extends AppCompatActivity
         LoginFragment.OnFragmentInteractionListener,
         RegisterFragment.OnFragmentInteractionListener {
 
+    private FirebaseAuth mAuth;
+    private FirebaseUser user;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,12 +47,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                scanNetwork();
-            }
-        });
+        fab.setOnClickListener(view -> scanNetwork());
 
         final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -69,14 +71,97 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        // firebase authenticator
+        mAuth = FirebaseAuth.getInstance();
 
-        mountLoginFragment();
+        // signout
+        mAuth.signOut();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        user = mAuth.getCurrentUser();
+
+        if (user == null) {
+            mountLoginFragment();
+            Toast.makeText(MainActivity.this, "Please login or create a new account", Toast.LENGTH_LONG).show();
+        } else {
+            // existing user
+            // fill user info in panel
+            // load chat
+        }
     }
 
     public void scanNetwork() {
         Intent intent = new Intent(this, ActiveUsersActivity.class);
         startActivity(intent);
     }
+
+    // app logic
+
+    @Override
+    public boolean requestLogin(String email, String password) {
+
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d("BB", "signInWithEmail:success");
+                        user = mAuth.getCurrentUser();
+                        Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w("BB", "signInWithEmail:failure", task.getException());
+                        Toast.makeText(MainActivity.this, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        return false;
+    }
+
+    @Override
+    public boolean requestRegister(String username, String email, String password) {
+
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d("NN", "createUserWithEmail:success");
+                        user = mAuth.getCurrentUser();
+                        Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
+
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Log.w("NN", "createUserWithEmail:failure", task.getException());
+                        Toast.makeText(MainActivity.this, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        return true;
+
+    }
+
+    @Override
+    public void mountLoginFragment() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, LoginFragment.newInstance());
+        ft.commit();
+    }
+
+
+    @Override
+    public void mountRegisterFragment() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, RegisterFragment.newInstance());
+        ft.commit();
+    }
+
+
+    // view logic
 
     /**
      * Fills the user information in the drawer panel
@@ -152,32 +237,4 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-
-    @Override
-    public boolean requestLogin(String username, String password) {
-
-        Toast.makeText(getApplicationContext(), "Login requested", Toast.LENGTH_LONG).show();
-        return false;
-    }
-
-    @Override
-    public boolean requestRegister(String username, String email, String password) {
-        Toast.makeText(getApplicationContext(), "Register requested", Toast.LENGTH_LONG).show();
-        return false;
-    }
-
-    @Override
-    public void mountLoginFragment() {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, LoginFragment.newInstance());
-        ft.commit();
-    }
-
-
-    @Override
-    public void mountRegisterFragment() {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, RegisterFragment.newInstance());
-        ft.commit();
-    }
 }

@@ -28,6 +28,7 @@
     <!-- Strings related to user login and registration -->
     <string name="prompt_login_username">User name</string>
     <string name="prompt_login_pass">Password</string>
+    <string name="prompt_login_pass_bis">Repeat password</string>
     <string name="prompt_login_email">Email</string>
 
     <string name="action_login">Login</string>

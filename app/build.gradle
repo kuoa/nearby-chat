@@ -12,9 +12,6 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 
-        jackOptions {
-            enabled true
-        }
     }
     buildTypes {
         release {
@@ -30,6 +27,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.google.firebase:firebase-auth:11.0.4'
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -42,3 +40,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-plus:11.0.4'
     testCompile 'junit:junit:4.12'
 }
+
+
+apply plugin: 'com.google.gms.google-services'

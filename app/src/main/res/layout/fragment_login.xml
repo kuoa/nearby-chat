@@ -26,11 +26,11 @@
                 android:layout_height="wrap_content">
 
                 <AutoCompleteTextView
-                    android:id="@+id/login_username"
+                    android:id="@+id/login_email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_login_username"
-                    android:inputType="text"
+                    android:hint="@string/prompt_login_email"
+                    android:inputType="textEmailAddress"
                     android:maxLines="1" />
 
             </android.support.design.widget.TextInputLayout>
