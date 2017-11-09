@@ -7,9 +7,15 @@ import java.util.Date;
 @IgnoreExtraProperties
 public class OnlineUser {
 
+    public OnlineUser() {
+
+    }
+
+    private String id;
     private Date date;
 
-    public OnlineUser() {
+    public OnlineUser(String id) {
+        this.id = id;
         date = new Date();
     }
 
@@ -17,4 +23,7 @@ public class OnlineUser {
         return date;
     }
 
+    public String getId() {
+        return id;
+    }
 }

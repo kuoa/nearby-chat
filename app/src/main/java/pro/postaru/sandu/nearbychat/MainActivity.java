@@ -24,9 +24,9 @@ public class MainActivity extends AppCompatActivity
         implements LoginFragment.OnFragmentInteractionListener,
         RegisterFragment.OnFragmentInteractionListener {
 
-    private FirebaseAuth firebaseAuth;
+    private FirebaseAuth auth;
     private FirebaseUser user;
-    private DatabaseReference databaseReference;
+    private DatabaseReference database;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -36,15 +36,15 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        firebaseAuth = FirebaseAuth.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference();
+        auth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance().getReference();
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
-        user = firebaseAuth.getCurrentUser();
+        user = auth.getCurrentUser();
 
         if (user == null) {
             mountLoginFragment();
@@ -60,12 +60,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void requestLogin(String email, String password) {
 
-        firebaseAuth.signInWithEmailAndPassword(email, password)
+        auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d("BB", "signInWithEmail:success");
-                        user = firebaseAuth.getCurrentUser();
+                        user = auth.getCurrentUser();
 
                         registerOnlineUser();
                         mountOnlineActivity();
@@ -83,12 +83,12 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void requestRegister(String username, String email, String password) {
 
-        firebaseAuth.createUserWithEmailAndPassword(email, password)
+        auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
                         Log.d("NN", "createUserWithEmail:success");
-                        user = firebaseAuth.getCurrentUser();
+                        user = auth.getCurrentUser();
                         Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
 
                         registerOnlineUser();
@@ -104,9 +104,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void registerOnlineUser() {
-        OnlineUser onlineUser = new OnlineUser();
+        OnlineUser onlineUser = new OnlineUser(user.getUid());
 
-        databaseReference.child(Database.onlineUsers)
+        database.child(Database.onlineUsers)
                 .child(user.getUid())
                 .setValue(onlineUser);
     }
@@ -119,14 +119,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void mountLoginFragment() {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, LoginFragment.newInstance());
+        ft.replace(R.id.fragment_container_main, LoginFragment.newInstance());
         ft.commit();
     }
 
     @Override
     public void mountRegisterFragment() {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container, RegisterFragment.newInstance());
+        ft.replace(R.id.fragment_container_main, RegisterFragment.newInstance());
         ft.commit();
     }
 

@@ -33,13 +33,6 @@
                 android:value=".MainActivity" />
         </activity>
         <activity
-            android:name=".activities.ActiveUsersActivity"
-            android:label="@string/title_activity_active_users">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".MainActivity" />
-        </activity>
-        <activity
             android:name=".activities.ChatActivity"
             android:label="@string/title_activity_chat">
             <meta-data

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -26,13 +27,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import pro.postaru.sandu.nearbychat.MainActivity;
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.constants.Database;
+import pro.postaru.sandu.nearbychat.fragments.MapFragment;
 
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
-    private DatabaseReference databaseReference;
+    private DatabaseReference database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +69,11 @@ public class OnlineActivity extends AppCompatActivity
 
         firebaseAuth = FirebaseAuth.getInstance();
 
-        databaseReference = FirebaseDatabase.getInstance().getReference();
+        database = FirebaseDatabase.getInstance().getReference();
 
         user = firebaseAuth.getCurrentUser();
 
+        mountMapFragment();
     }
 
     // activity logic
@@ -85,7 +88,7 @@ public class OnlineActivity extends AppCompatActivity
 
     public void removeOnlineUser() {
         Log.d("NNN", "remove online user: success");
-        databaseReference.child(Database.onlineUsers)
+        database.child(Database.onlineUsers)
                 .child(user.getUid())
                 .removeValue();
     }
@@ -93,6 +96,12 @@ public class OnlineActivity extends AppCompatActivity
     public void mountMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+    }
+
+    public void mountMapFragment() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container_online, MapFragment.newInstance());
+        ft.commit();
     }
 
     // view logic

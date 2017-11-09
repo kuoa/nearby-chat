@@ -15,17 +15,17 @@ import android.widget.TextView;
 import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
-import pro.postaru.sandu.nearbychat.models.ChatMessage;
+import pro.postaru.sandu.nearbychat.models.Message;
 
-public class ChatAdapter extends ArrayAdapter<ChatMessage> {
+public class ChatAdapter extends ArrayAdapter<Message> {
 
     private final Activity activity;
 
     private final int layoutResource;
 
-    private final List<ChatMessage> messages;
+    private final List<Message> messages;
 
-    public ChatAdapter(@NonNull Activity activity, @LayoutRes int resource, @NonNull List<ChatMessage> messages) {
+    public ChatAdapter(@NonNull Activity activity, @LayoutRes int resource, @NonNull List<Message> messages) {
         super(activity, resource, messages);
 
         this.activity = activity;
@@ -42,7 +42,7 @@ public class ChatAdapter extends ArrayAdapter<ChatMessage> {
             convertView = inflater.inflate(layoutResource, null);
         }
 
-        ChatMessage message = messages.get(position);
+        Message message = messages.get(position);
 
         TextView messageView = (TextView) convertView.findViewById(R.id.chat_message);
         messageView.setText(message.text);
@@ -67,5 +67,4 @@ public class ChatAdapter extends ArrayAdapter<ChatMessage> {
 
         return convertView;
     }
-
 }

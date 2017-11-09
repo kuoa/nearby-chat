@@ -12,8 +12,6 @@ public class UserProfile implements Serializable {
     public UserProfile() {
     }
 
-    ;
-
     public String id;
     public String userName;
     public String bio;

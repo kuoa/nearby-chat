@@ -1,10 +1,10 @@
 package pro.postaru.sandu.nearbychat.adapters;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.content.Context;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,21 +15,20 @@ import android.widget.TextView;
 import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
-import pro.postaru.sandu.nearbychat.activities.ChatActivity;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 
-public class ActiveUsersAdapter extends ArrayAdapter<UserProfile>{
+public class OnlineUsersAdapter extends ArrayAdapter<UserProfile> {
 
-    private final Activity activity;
+    private final Context context;
 
     private final int layoutResource;
 
     private final List<UserProfile> userProfileList;
 
-    public ActiveUsersAdapter(@NonNull Activity activity, @LayoutRes int resource, @NonNull List<UserProfile> userProfiles) {
-        super(activity, resource, userProfiles);
+    public OnlineUsersAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<UserProfile> userProfiles) {
+        super(context, resource, userProfiles);
 
-        this.activity = activity;
+        this.context = context;
         this.layoutResource = resource;
         this.userProfileList = userProfiles;
     }
@@ -58,11 +57,6 @@ public class ActiveUsersAdapter extends ArrayAdapter<UserProfile>{
     }
 
     private void launchConversationWithUser(UserProfile user){
-        Intent intent = new Intent(activity, ChatActivity.class);
-
-        // conversation partner
-        intent.putExtra(ChatActivity.CHAT_PARTNER_KEY, user);
-
-        activity.startActivity(intent);
+        Log.d("DDD", "Conversation launched");
     }
 }

@@ -12,14 +12,14 @@ import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.adapters.ChatAdapter;
-import pro.postaru.sandu.nearbychat.models.ChatMessage;
+import pro.postaru.sandu.nearbychat.models.Message;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 
 public class ChatActivity extends AppCompatActivity {
 
     public static final String CHAT_PARTNER_KEY = "pro.postaru.sandu.nearbychat.CHAT_PARTNER";
 
-    private List<ChatMessage> currentMessages;
+    private List<Message> currentMessages;
 
     private ChatAdapter chatAdapter;
 
@@ -50,7 +50,7 @@ public class ChatActivity extends AppCompatActivity {
         currentMessages = new ArrayList<>();
 
         for(int i = 0; i < 20; i++){
-            ChatMessage message = new ChatMessage();
+            Message message = new Message();
             message.text = "Message " + i;
             message.mine = (i % 2 == 0);
             currentMessages.add(message);
@@ -68,7 +68,7 @@ public class ChatActivity extends AppCompatActivity {
         String content = messageEditView.getText().toString();
         messageEditView.setText("");
 
-        ChatMessage message = new ChatMessage();
+        Message message = new Message();
         message.mine = true;
         message.text = content;
 

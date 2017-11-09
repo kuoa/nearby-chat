@@ -28,8 +28,6 @@ public class RegisterFragment extends Fragment {
 
     public static RegisterFragment newInstance() {
         RegisterFragment fragment = new RegisterFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
         return fragment;
     }
 

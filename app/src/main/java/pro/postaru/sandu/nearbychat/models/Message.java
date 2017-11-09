@@ -5,12 +5,10 @@ import com.google.firebase.database.IgnoreExtraProperties;
 import java.util.Date;
 
 @IgnoreExtraProperties
-public class ChatMessage {
+public class Message {
 
-    public ChatMessage() {
+    public Message() {
     }
-
-    ;
 
     public String id;
     public String senderId;
