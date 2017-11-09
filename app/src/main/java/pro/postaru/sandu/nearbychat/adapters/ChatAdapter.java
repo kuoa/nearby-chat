@@ -45,12 +45,12 @@ public class ChatAdapter extends ArrayAdapter<ChatMessage> {
         ChatMessage message = messages.get(position);
 
         TextView messageView = (TextView) convertView.findViewById(R.id.chat_message);
-        messageView.setText(message.getText());
+        messageView.setText(message.text);
 
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageView.getLayoutParams();
 
         // custom style for a message sent by me
-        if(message.isMyMessage()){
+        if (message.mine) {
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
             messageView.setBackgroundResource(R.drawable.rounded_corner_sent);

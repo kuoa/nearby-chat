@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1022795174331",
+    "firebase_url": "https://nearby-chat-a3151.firebaseio.com",
+    "project_id": "nearby-chat-a3151",
+    "storage_bucket": "nearby-chat-a3151.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1022795174331:android:9b4053468d280b51",
+        "android_client_info": {
+          "package_name": "pro.postaru.sandu.nearbychat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1022795174331-u5g0ouapn82tloipli3f273ikf9f0on3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "pro.postaru.sandu.nearbychat",
+            "certificate_hash": "d94c2b47889c1a38bd8fa43e5c9a7e81e8087ab7"
+          }
+        },
+        {
+          "client_id": "1022795174331-mqn9vlilv1essct64rc37k9qd3gs4rl1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBebB2Le9vI_RKZUD52QKOyOLzErAmE3Ek"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1022795174331-mqn9vlilv1essct64rc37k9qd3gs4rl1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

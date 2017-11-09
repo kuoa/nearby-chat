@@ -42,7 +42,7 @@ public class ChatActivity extends AppCompatActivity {
         conversationPartner = (UserProfile) getIntent().getExtras().get(CHAT_PARTNER_KEY);
 
         // set conversation title
-        setTitle(conversationPartner.getUserName());
+        setTitle(conversationPartner.userName);
 
         // hide keyboard by default
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
@@ -51,8 +51,8 @@ public class ChatActivity extends AppCompatActivity {
 
         for(int i = 0; i < 20; i++){
             ChatMessage message = new ChatMessage();
-            message.setText("Message " + i);
-            message.setMyMessage(i % 2 == 0);
+            message.text = "Message " + i;
+            message.mine = (i % 2 == 0);
             currentMessages.add(message);
         }
 
@@ -69,8 +69,8 @@ public class ChatActivity extends AppCompatActivity {
         messageEditView.setText("");
 
         ChatMessage message = new ChatMessage();
-        message.setMyMessage(true);
-        message.setText(content);
+        message.mine = true;
+        message.text = content;
 
         chatAdapter.add(message);
     }

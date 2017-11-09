@@ -131,7 +131,7 @@ public class RegisterFragment extends Fragment {
 
 
     public interface OnFragmentInteractionListener {
-        boolean requestRegister(String username, String email, String password);
+        void requestRegister(String username, String email, String password);
 
         void mountLoginFragment();
 

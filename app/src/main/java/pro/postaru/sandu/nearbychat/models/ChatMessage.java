@@ -1,52 +1,21 @@
 package pro.postaru.sandu.nearbychat.models;
 
+import com.google.firebase.database.IgnoreExtraProperties;
+
 import java.util.Date;
 
+@IgnoreExtraProperties
 public class ChatMessage {
 
-    private String id;
-    private String senderId;
-    private String text;
-    private Date date;
-    private boolean myMessage;
-
-    public String getId() {
-        return id;
+    public ChatMessage() {
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    ;
 
-    public String getSenderId() {
-        return senderId;
-    }
+    public String id;
+    public String senderId;
+    public String text;
+    public Date date;
+    public boolean mine;
 
-    public void setSenderId(String senderId) {
-        this.senderId = senderId;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public boolean isMyMessage() {
-        return myMessage;
-    }
-
-    public void setMyMessage(boolean myMessage) {
-        this.myMessage = myMessage;
-    }
 }

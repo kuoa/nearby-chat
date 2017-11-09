@@ -14,8 +14,8 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import pro.postaru.sandu.nearbychat.activities.ChatActivity;
 import pro.postaru.sandu.nearbychat.R;
+import pro.postaru.sandu.nearbychat.activities.ChatActivity;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 
 public class ActiveUsersAdapter extends ArrayAdapter<UserProfile>{
@@ -48,16 +48,11 @@ public class ActiveUsersAdapter extends ArrayAdapter<UserProfile>{
         TextView userBio = (TextView) convertView.findViewById(R.id.active_user_bio);
         ImageView userAvatar = (ImageView) convertView.findViewById(R.id.active_user_avatar);
 
-        userName.setText(user.getUserName());
-        userBio.setText(user.getBio());
-        userAvatar.setImageBitmap(user.getAvatar());
+        userName.setText(user.userName);
+        userBio.setText(user.bio);
+        userAvatar.setImageBitmap(user.avatar);
 
-        convertView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                launchConversationWithUser(user);
-            }
-        });
+        convertView.setOnClickListener(v -> launchConversationWithUser(user));
 
         return convertView;
     }

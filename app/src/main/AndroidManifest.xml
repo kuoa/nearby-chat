@@ -46,6 +46,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.ActiveUsersActivity" />
         </activity>
+        <activity
+            android:name=".activities.OnlineActivity"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="@string/title_activity_online"></activity>
     </application>
 
 </manifest>

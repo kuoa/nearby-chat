@@ -29,8 +29,8 @@ public class ActiveUsersActivity extends AppCompatActivity {
         for(int i = 0; i < 20; i++){
             UserProfile profile = new UserProfile();
 
-            profile.setUserName("User " + i);
-            profile.setBio("Bio " + i);
+            profile.userName = "User " + i;
+            profile.bio = "Bio " + i;
             activeUsers.add(profile);
         }
 
