@@ -12,11 +12,11 @@ public class Conversation {
     private String ownerId;
     private String partnerId;
 
-    private List<Message> messageList;
+    private List<Message> messages;
 
 
     public Conversation() {
-        messageList = new ArrayList<>();
+        messages = new ArrayList<>();
     }
 
 
@@ -25,5 +25,9 @@ public class Conversation {
         this.id = id;
         this.ownerId = ownerId;
         this.partnerId = partnerId;
+    }
+
+    public List<Message> getMessages() {
+        return messages;
     }
 }

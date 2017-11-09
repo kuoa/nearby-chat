@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,7 +18,7 @@ import pro.postaru.sandu.nearbychat.models.UserProfile;
 
 public class OnlineUsersAdapter extends ArrayAdapter<UserProfile> {
 
-    private final Context context;
+    private OnAdapterInteractionListener activity;
 
     private final int layoutResource;
 
@@ -28,9 +27,15 @@ public class OnlineUsersAdapter extends ArrayAdapter<UserProfile> {
     public OnlineUsersAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<UserProfile> userProfiles) {
         super(context, resource, userProfiles);
 
-        this.context = context;
         this.layoutResource = resource;
         this.userProfileList = userProfiles;
+
+        if (context instanceof OnAdapterInteractionListener) {
+            activity = (OnAdapterInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnAdapterInteractionListener");
+        }
     }
 
     @Override
@@ -51,12 +56,13 @@ public class OnlineUsersAdapter extends ArrayAdapter<UserProfile> {
         userBio.setText(user.bio);
         userAvatar.setImageBitmap(user.avatar);
 
-        convertView.setOnClickListener(v -> launchConversationWithUser(user));
+        convertView.setOnClickListener(v -> activity.mountChatFragment(user.id));
 
         return convertView;
     }
 
-    private void launchConversationWithUser(UserProfile user){
-        Log.d("DDD", "Conversation launched");
+    public interface OnAdapterInteractionListener {
+
+        void mountChatFragment(String partnerId);
     }
 }

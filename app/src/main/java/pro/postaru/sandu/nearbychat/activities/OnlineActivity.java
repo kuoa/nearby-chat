@@ -26,11 +26,14 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import pro.postaru.sandu.nearbychat.MainActivity;
 import pro.postaru.sandu.nearbychat.R;
+import pro.postaru.sandu.nearbychat.adapters.OnlineUsersAdapter;
 import pro.postaru.sandu.nearbychat.constants.Database;
+import pro.postaru.sandu.nearbychat.fragments.ChatFragment;
 import pro.postaru.sandu.nearbychat.fragments.MapFragment;
 
 public class OnlineActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener,
+        OnlineUsersAdapter.OnAdapterInteractionListener {
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
@@ -186,4 +189,10 @@ public class OnlineActivity extends AppCompatActivity
         return true;
     }
 
+    @Override
+    public void mountChatFragment(String partnerId) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container_online, ChatFragment.newInstance(partnerId));
+        ft.commit();
+    }
 }
