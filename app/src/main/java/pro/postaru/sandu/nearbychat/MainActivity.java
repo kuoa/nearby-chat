@@ -2,7 +2,8 @@ package pro.postaru.sandu.nearbychat;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentTransaction;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -14,6 +15,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import pro.postaru.sandu.nearbychat.activities.OnlineActivity;
+import pro.postaru.sandu.nearbychat.adapters.MainFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.fragments.LoginFragment;
 import pro.postaru.sandu.nearbychat.fragments.RegisterFragment;
@@ -28,13 +30,31 @@ public class MainActivity extends AppCompatActivity
     private FirebaseUser user;
     private DatabaseReference database;
 
+    private ViewPager viewPager;
+
+    private MainFragmentPagerAdapter mainFragmentPagerAdapter;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
+
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        mainFragmentPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
+
+        // Set up the ViewPager with the sections adapter.
+        viewPager = (ViewPager) findViewById(R.id.container_main);
+        viewPager.setAdapter(mainFragmentPagerAdapter);
+
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs_main);
+
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
+
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference();
@@ -47,7 +67,6 @@ public class MainActivity extends AppCompatActivity
         user = auth.getCurrentUser();
 
         if (user == null) {
-            mountLoginFragment();
             Toast.makeText(MainActivity.this, "Please login or create a new account", Toast.LENGTH_LONG).show();
         } else {
             mountOnlineActivity();
@@ -115,19 +134,4 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(this, OnlineActivity.class);
         startActivity(intent);
     }
-
-    @Override
-    public void mountLoginFragment() {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container_main, LoginFragment.newInstance());
-        ft.commit();
-    }
-
-    @Override
-    public void mountRegisterFragment() {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container_main, RegisterFragment.newInstance());
-        ft.commit();
-    }
-
 }

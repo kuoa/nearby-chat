@@ -44,7 +44,10 @@
     <string name="profile_image_permission">This permission is needed in order to select a profile image</string>
     <string name="typeMessage">Send text</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="tab_login">Login</string>
+    <string name="tab_register">Register</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 
 </resources>

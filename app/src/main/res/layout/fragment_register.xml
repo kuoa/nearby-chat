@@ -97,14 +97,6 @@
                 android:text="@string/action_register"
                 android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/goto_login_btn"
-                style="?android:textAppearanceSmall"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/action_existing_account"
-                android:textStyle="bold" />
         </LinearLayout>
     </ScrollView>
 

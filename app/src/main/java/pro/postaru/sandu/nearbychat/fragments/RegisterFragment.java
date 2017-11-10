@@ -42,9 +42,6 @@ public class RegisterFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_register, container, false);
 
-        Button mountLoginFragmentButton = (Button) view.findViewById(R.id.goto_login_btn);
-        mountLoginFragmentButton.setOnClickListener(view1 -> activity.mountLoginFragment());
-
         Button registerButton = (Button) view.findViewById(R.id.register_btn);
         registerButton.setOnClickListener(view1 -> registerHandle());
 
@@ -130,8 +127,6 @@ public class RegisterFragment extends Fragment {
 
     public interface OnFragmentInteractionListener {
         void requestRegister(String username, String email, String password);
-
-        void mountLoginFragment();
 
     }
 }

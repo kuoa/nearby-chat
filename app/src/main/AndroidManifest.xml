@@ -34,8 +34,8 @@
         </activity>
         <activity
             android:name=".activities.OnlineActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:label="@string/title_activity_online"></activity>
+            android:label="@string/title_activity_online"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
 
 </manifest>

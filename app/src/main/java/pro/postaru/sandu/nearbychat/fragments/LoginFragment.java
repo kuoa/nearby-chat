@@ -42,9 +42,6 @@ public class LoginFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_login, container, false);
 
-        Button mountRegisterFragmentButton = (Button) view.findViewById(R.id.goto_register_btn);
-        mountRegisterFragmentButton.setOnClickListener(view1 -> activity.mountRegisterFragment());
-
         Button loginButton = (Button) view.findViewById(R.id.login_btn);
         loginButton.setOnClickListener(view1 -> loginHandler());
 
@@ -110,8 +107,6 @@ public class LoginFragment extends Fragment {
     public interface OnFragmentInteractionListener {
 
         void requestLogin(String email, String password);
-
-        void mountRegisterFragment();
     }
 
 }
