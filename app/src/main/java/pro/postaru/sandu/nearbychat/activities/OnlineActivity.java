@@ -5,8 +5,9 @@ import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
-import android.support.v4.app.FragmentTransaction;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -26,14 +27,17 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import pro.postaru.sandu.nearbychat.MainActivity;
 import pro.postaru.sandu.nearbychat.R;
+import pro.postaru.sandu.nearbychat.adapters.OnlineFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.adapters.OnlineUsersAdapter;
 import pro.postaru.sandu.nearbychat.constants.Database;
-import pro.postaru.sandu.nearbychat.fragments.ChatFragment;
-import pro.postaru.sandu.nearbychat.fragments.MapFragment;
 
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnlineUsersAdapter.OnAdapterInteractionListener {
+
+    private ViewPager viewPager;
+    private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
+
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
@@ -57,7 +61,7 @@ public class OnlineActivity extends AppCompatActivity
             public void onDrawerStateChanged(int newState) {
                 if (newState == DrawerLayout.STATE_SETTLING) {
                     // opening
-                    if (!drawer.isDrawerOpen(Gravity.LEFT)) {
+                    if (!drawer.isDrawerOpen(Gravity.START)) {
                         fillDrawerUserProfile(drawer);
                     }
                 }
@@ -69,6 +73,16 @@ public class OnlineActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs_online);
+
+        onlineFragmentPagerAdapter = new OnlineFragmentPagerAdapter(getSupportFragmentManager());
+
+        viewPager = (ViewPager) findViewById(R.id.container_online);
+        viewPager.setAdapter(onlineFragmentPagerAdapter);
+
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+        tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
 
         firebaseAuth = FirebaseAuth.getInstance();
 
@@ -102,9 +116,11 @@ public class OnlineActivity extends AppCompatActivity
     }
 
     public void mountMapFragment() {
+        /*
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_container_online, MapFragment.newInstance());
         ft.commit();
+         */
     }
 
     // view logic
@@ -129,7 +145,7 @@ public class OnlineActivity extends AppCompatActivity
         drawerUserNameView.setText(profileUserName);
         drawerUserBioView.setText(profileBio);
 
-        if (avatarPath != "") {
+        if (!avatarPath.equals("")) {
             drawerUserAvatarView.setImageBitmap(BitmapFactory.decodeFile(avatarPath));
         }
     }
@@ -191,8 +207,10 @@ public class OnlineActivity extends AppCompatActivity
 
     @Override
     public void mountChatFragment(String partnerId) {
+        /*
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.replace(R.id.fragment_container_online, ChatFragment.newInstance(partnerId));
         ft.commit();
+        */
     }
 }

@@ -42,11 +42,8 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
         mainFragmentPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
 
-        // Set up the ViewPager with the sections adapter.
         viewPager = (ViewPager) findViewById(R.id.container_main);
         viewPager.setAdapter(mainFragmentPagerAdapter);
 

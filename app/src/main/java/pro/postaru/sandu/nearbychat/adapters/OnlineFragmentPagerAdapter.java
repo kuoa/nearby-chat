@@ -4,12 +4,11 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import pro.postaru.sandu.nearbychat.fragments.LoginFragment;
-import pro.postaru.sandu.nearbychat.fragments.RegisterFragment;
+import pro.postaru.sandu.nearbychat.fragments.MapFragment;
 
-public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
+public class OnlineFragmentPagerAdapter extends FragmentPagerAdapter {
 
-    public MainFragmentPagerAdapter(FragmentManager fm) {
+    public OnlineFragmentPagerAdapter(FragmentManager fm) {
         super(fm);
     }
 
@@ -17,11 +16,11 @@ public class MainFragmentPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
 
         if (position == 0) {
-            return LoginFragment.newInstance();
+            return MapFragment.newInstance();
         } else {
-            return RegisterFragment.newInstance();
+            // TODO CONVERSATION FRAGMENT
+            return MapFragment.newInstance();
         }
-
     }
 
     @Override

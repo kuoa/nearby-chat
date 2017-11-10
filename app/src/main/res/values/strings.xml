@@ -48,6 +48,8 @@
     <string name="title_activity_main2">Main2Activity</string>
     <string name="tab_login">Login</string>
     <string name="tab_register">Register</string>
+    <string name="tab_map">Map</string>
+    <string name="tab_conversations">Conversations</string>
     <string name="section_format">Hello World from section: %1$d</string>
 
 </resources>
