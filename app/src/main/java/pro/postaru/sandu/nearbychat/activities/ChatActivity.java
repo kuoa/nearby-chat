@@ -1,7 +1,7 @@
 package pro.postaru.sandu.nearbychat.activities;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.WindowManager;
@@ -72,8 +72,8 @@ public class ChatActivity extends AppCompatActivity {
 
         for (int i = 0; i < 20; i++) {
             Message message = new Message();
-            message.text = "Message " + i;
-            message.mine = (i % 2 == 0);
+            message.setText("Message " + i);
+            message.setMine(i % 2 == 0);
             conversation.getMessages().add(message);
         }
 
@@ -83,10 +83,10 @@ public class ChatActivity extends AppCompatActivity {
 
 
         conversationPartner = new UserProfile();
-        conversationPartner.userName = "TESTING";
+        conversationPartner.setUserName("TESTING");
 
         // set conversation title
-        setTitle(conversationPartner.userName);
+        setTitle(conversationPartner.getUserName());
 
         // hide keyboard by default
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
@@ -105,8 +105,8 @@ public class ChatActivity extends AppCompatActivity {
         messageEditView.setText("");
 
         Message message = new Message();
-        message.mine = true;
-        message.text = content;
+        message.setMine(true);
+        message.setText(content);
 
         chatAdapter.add(message);
     }

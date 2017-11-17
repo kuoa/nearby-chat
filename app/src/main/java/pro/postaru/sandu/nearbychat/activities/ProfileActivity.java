@@ -87,7 +87,6 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
 
-
     private boolean hasReadPermission() {
         int result = ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return result == PackageManager.PERMISSION_GRANTED;
@@ -125,13 +124,17 @@ public class ProfileActivity extends AppCompatActivity {
             Uri selectedImage = data.getData();
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
-            Cursor cursor = getContentResolver().query(selectedImage,
-                    filePathColumn, null, null, null);
-            cursor.moveToFirst();
-
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            picturePath = cursor.getString(columnIndex);
-            cursor.close();
+            Cursor cursor = null;
+            if (selectedImage != null) {
+                cursor = getContentResolver().query(selectedImage,
+                        filePathColumn, null, null, null);
+            }
+            if (cursor != null) {
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                picturePath = cursor.getString(columnIndex);
+                cursor.close();
+            }
 
             profileImage.setImageBitmap(BitmapFactory.decodeFile(picturePath));
         }
@@ -149,7 +152,7 @@ public class ProfileActivity extends AppCompatActivity {
         userNameView.setText(profileUserName);
         userBioView.setText(profileBio);
 
-        if(avatarPath != ""){
+        if (avatarPath != "") {
             profileImage.setImageBitmap(BitmapFactory.decodeFile(avatarPath));
         }
     }
@@ -190,7 +193,7 @@ public class ProfileActivity extends AppCompatActivity {
             editor.putString(ProfileActivity.USER_BIO_KEY, userBio);
             editor.putString(ProfileActivity.USER_AVATAR_KEY, picturePath);
 
-            editor.commit();
+            editor.apply();
         }
 
     }

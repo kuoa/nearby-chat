@@ -35,9 +35,9 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
 
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
-        if(convertView == null){
+        if (convertView == null) {
             LayoutInflater inflater = LayoutInflater.from(getContext());
             convertView = inflater.inflate(layoutResource, null);
         }
@@ -45,18 +45,18 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         Message message = messages.get(position);
 
         TextView messageView = (TextView) convertView.findViewById(R.id.chat_message);
-        messageView.setText(message.text);
+        messageView.setText(message.getText());
 
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageView.getLayoutParams();
 
         // custom style for a message sent by me
-        if (message.mine) {
+        if (message.isMine()) {
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
             messageView.setBackgroundResource(R.drawable.rounded_corner_sent);
             messageView.setTextColor(Color.BLACK);
 
-        }else{
+        } else {
             params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, 0);
             messageView.setBackgroundResource(R.drawable.rounded_corner_received);

@@ -7,14 +7,52 @@ import java.util.Date;
 @IgnoreExtraProperties
 public class Message {
 
+    private String id;
+    private String senderId;
+    private String text;
+    private Date date;
+    private boolean mine;
     // required empty constructor for firebase loading
     public Message() {
     }
 
-    public String id;
-    public String senderId;
-    public String text;
-    public Date date;
-    public boolean mine;
+    public String getId() {
+        return id;
+    }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getSenderId() {
+        return senderId;
+    }
+
+    public void setSenderId(String senderId) {
+        this.senderId = senderId;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public boolean isMine() {
+        return mine;
+    }
+
+    public void setMine(boolean mine) {
+        this.mine = mine;
+    }
 }

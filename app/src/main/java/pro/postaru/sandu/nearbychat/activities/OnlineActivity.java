@@ -32,6 +32,7 @@ import pro.postaru.sandu.nearbychat.adapters.OnlineFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.adapters.OnlineUsersAdapter;
 import pro.postaru.sandu.nearbychat.constants.Database;
 
+//logged => map conversation profile
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnlineUsersAdapter.OnAdapterInteractionListener,

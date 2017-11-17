@@ -18,11 +18,9 @@ import pro.postaru.sandu.nearbychat.models.UserProfile;
 
 public class ActiveConversationsAdapter extends ArrayAdapter<UserProfile> {
 
-    private OnAdapterInteractionListener activity;
-
     private final int layoutResource;
-
     private final List<UserProfile> conversationUsers;
+    private OnAdapterInteractionListener activity;
 
     public ActiveConversationsAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<UserProfile> conversationUsers) {
         super(context, resource, conversationUsers);
@@ -52,11 +50,11 @@ public class ActiveConversationsAdapter extends ArrayAdapter<UserProfile> {
         TextView userBio = (TextView) convertView.findViewById(R.id.active_user_bio);
         ImageView userAvatar = (ImageView) convertView.findViewById(R.id.active_user_avatar);
 
-        userName.setText(user.userName);
-        userBio.setText(user.bio);
-        userAvatar.setImageBitmap(user.avatar);
+        userName.setText(user.getUserName());
+        userBio.setText(user.getBio());
+        userAvatar.setImageBitmap(user.getAvatar());
 
-        convertView.setOnClickListener(v -> activity.mountChatActivity(user.id));
+        convertView.setOnClickListener(v -> activity.mountChatActivity(user.getId()));
 
         return convertView;
     }

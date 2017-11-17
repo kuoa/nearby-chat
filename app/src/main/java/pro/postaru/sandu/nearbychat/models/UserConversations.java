@@ -10,7 +10,7 @@ public class UserConversations {
 
     public String id;
 
-    public List<Conversation> conversations;
+    private List<Conversation> conversations;
 
     // required empty constructor for firebase loading
     public UserConversations(){
@@ -21,4 +21,19 @@ public class UserConversations {
         conversations = new ArrayList<>();
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public List<Conversation> getConversations() {
+        return conversations;
+    }
+
+    public void setConversations(List<Conversation> conversations) {
+        this.conversations = conversations;
+    }
 }

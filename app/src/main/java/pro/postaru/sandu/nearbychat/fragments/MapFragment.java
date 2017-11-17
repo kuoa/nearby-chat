@@ -32,10 +32,6 @@ public class MapFragment extends Fragment {
     private ListView onlineUsersView;
 
     private OnlineUsersAdapter onlineUsersAdapter;
-
-    private FirebaseUser user;
-    private DatabaseReference database;
-
     private final ChildEventListener onlineUserListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -44,11 +40,11 @@ public class MapFragment extends Fragment {
 
             if (onlineUser != null) {
                 UserProfile userProfile = new UserProfile();
-                userProfile.userName = onlineUser.getId();
-                userProfile.id = onlineUser.getId();
-                userProfile.bio = "No bio";
+                userProfile.setUserName(onlineUser.getId());
+                userProfile.setId(onlineUser.getId());
+                userProfile.setBio("No bio");
 
-                Log.w("BBB", "id " + userProfile.id);
+                Log.w("BBB", "id " + userProfile.getId());
 
                 onlineUserProfiles.add(userProfile);
 
@@ -74,9 +70,9 @@ public class MapFragment extends Fragment {
                 UserProfile userProfile = new UserProfile();
 
                 //only need the id to remove
-                userProfile.id = onlineUser.getId();
+                userProfile.setId(onlineUser.getId());
 
-                Log.w("BBB", "remove id " + userProfile.id);
+                Log.w("BBB", "remove id " + userProfile.getId());
 
                 onlineUserProfiles.remove(userProfile);
 
@@ -98,6 +94,8 @@ public class MapFragment extends Fragment {
             Log.w("BBB", "loadPost:onCancelled", databaseError.toException());
         }
     };
+    private FirebaseUser user;
+    private DatabaseReference database;
 
     public MapFragment() {
     }

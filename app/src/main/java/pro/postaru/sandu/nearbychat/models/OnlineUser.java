@@ -7,13 +7,13 @@ import java.util.Date;
 @IgnoreExtraProperties
 public class OnlineUser {
 
+    private String id;
+    private Date date;
+
     // required empty constructor for firebase loading
     public OnlineUser() {
 
     }
-
-    private String id;
-    private Date date;
 
     public OnlineUser(String id) {
         this.id = id;
@@ -26,5 +26,9 @@ public class OnlineUser {
 
     public String getId() {
         return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

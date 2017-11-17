@@ -38,11 +38,10 @@ public class ConversationsFragment extends Fragment {
 
 
     public static ConversationsFragment newInstance() {
-         ConversationsFragment fragment = new ConversationsFragment();
+        ConversationsFragment fragment = new ConversationsFragment();
 
         return fragment;
     }
-
 
 
     @Override
@@ -55,8 +54,8 @@ public class ConversationsFragment extends Fragment {
         conversationUsersProfiles = new ArrayList<>();
 
         UserProfile user = new UserProfile();
-        user.id = "Test";
-        user.userName = "test";
+        user.setId("Test");
+        user.setUserName("test");
 
         conversationUsersProfiles.add(user);
 
