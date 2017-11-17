@@ -7,6 +7,7 @@ import java.util.Date;
 @IgnoreExtraProperties
 public class OnlineUser {
 
+    // required empty constructor for firebase loading
     public OnlineUser() {
 
     }

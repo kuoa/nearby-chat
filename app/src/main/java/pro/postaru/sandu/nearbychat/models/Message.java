@@ -7,6 +7,7 @@ import java.util.Date;
 @IgnoreExtraProperties
 public class Message {
 
+    // required empty constructor for firebase loading
     public Message() {
     }
 

@@ -56,13 +56,13 @@ public class OnlineUsersAdapter extends ArrayAdapter<UserProfile> {
         userBio.setText(user.bio);
         userAvatar.setImageBitmap(user.avatar);
 
-        convertView.setOnClickListener(v -> activity.mountChatFragment(user.id));
+        convertView.setOnClickListener(v -> activity.mountChatActivity(user.id));
 
         return convertView;
     }
 
     public interface OnAdapterInteractionListener {
 
-        void mountChatFragment(String partnerId);
+        void mountChatActivity(String partnerId);
     }
 }

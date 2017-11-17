@@ -10,11 +10,11 @@ import android.widget.ListView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,29 +36,61 @@ public class MapFragment extends Fragment {
     private FirebaseUser user;
     private DatabaseReference database;
 
-    private final ValueEventListener onlineUserListener = new ValueEventListener() {
+    private final ChildEventListener onlineUserListener = new ChildEventListener() {
         @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
 
-            onlineUserProfiles.clear();
+            OnlineUser onlineUser = dataSnapshot.getValue(OnlineUser.class);
 
-            for (DataSnapshot child : dataSnapshot.getChildren()) {
+            if (onlineUser != null) {
+                UserProfile userProfile = new UserProfile();
+                userProfile.userName = onlineUser.getId();
+                userProfile.id = onlineUser.getId();
+                userProfile.bio = "No bio";
 
-                OnlineUser onlineUser = child.getValue(OnlineUser.class);
+                Log.w("BBB", "id " + userProfile.id);
 
-                if (onlineUser != null) {
-                    UserProfile userProfile = new UserProfile();
-                    userProfile.userName = onlineUser.getId();
-                    userProfile.bio = "No bio";
+                onlineUserProfiles.add(userProfile);
 
-                    onlineUserProfiles.add(userProfile);
-
-                } else {
-                    Log.w("BBB", "No online users");
-                }
-
-                onlineUsersAdapter.notifyDataSetChanged();
+            } else {
+                Log.w("BBB", "No online users");
             }
+
+            onlineUsersAdapter.notifyDataSetChanged();
+
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            OnlineUser onlineUser = dataSnapshot.getValue(OnlineUser.class);
+
+            if (onlineUser != null) {
+                UserProfile userProfile = new UserProfile();
+
+                //only need the id to remove
+                userProfile.id = onlineUser.getId();
+
+                Log.w("BBB", "remove id " + userProfile.id);
+
+                onlineUserProfiles.remove(userProfile);
+
+            } else {
+                Log.w("BBB", "No online users");
+            }
+
+            onlineUsersAdapter.notifyDataSetChanged();
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
         }
 
         @Override
@@ -66,7 +98,6 @@ public class MapFragment extends Fragment {
             Log.w("BBB", "loadPost:onCancelled", databaseError.toException());
         }
     };
-
 
     public MapFragment() {
     }
@@ -85,7 +116,7 @@ public class MapFragment extends Fragment {
         user = FirebaseAuth.getInstance().getCurrentUser();
         database = FirebaseDatabase.getInstance().getReference();
 
-        database.child(Database.onlineUsers).addValueEventListener(onlineUserListener);
+        database.child(Database.onlineUsers).addChildEventListener(onlineUserListener);
 
         onlineUserProfiles = new ArrayList<>();
 

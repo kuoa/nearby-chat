@@ -9,6 +9,7 @@ import java.io.Serializable;
 @IgnoreExtraProperties
 public class UserProfile implements Serializable {
 
+    // required empty constructor for firebase loading
     public UserProfile() {
     }
 
@@ -17,4 +18,19 @@ public class UserProfile implements Serializable {
     public String bio;
 
     public Bitmap avatar;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserProfile that = (UserProfile) o;
+
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

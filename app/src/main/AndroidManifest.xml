@@ -36,6 +36,10 @@
             android:name=".activities.OnlineActivity"
             android:label="@string/title_activity_online"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:label="@string/title_activity_chat"
+            android:name=".activities.ChatActivity"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

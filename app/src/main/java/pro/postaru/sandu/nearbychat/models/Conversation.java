@@ -14,17 +14,17 @@ public class Conversation {
 
     private List<Message> messages;
 
-
+    // required empty constructor for firebase loading
     public Conversation() {
-        messages = new ArrayList<>();
     }
 
 
     public Conversation(String id, String ownerId, String partnerId) {
-        this();
+
         this.id = id;
         this.ownerId = ownerId;
         this.partnerId = partnerId;
+        this.messages = new ArrayList<>();
     }
 
     public List<Message> getMessages() {

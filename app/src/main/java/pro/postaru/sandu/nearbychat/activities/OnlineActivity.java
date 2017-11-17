@@ -206,11 +206,9 @@ public class OnlineActivity extends AppCompatActivity
     }
 
     @Override
-    public void mountChatFragment(String partnerId) {
-        /*
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container_online, ChatFragment.newInstance(partnerId));
-        ft.commit();
-        */
+    public void mountChatActivity(String partnerId) {
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra(ChatActivity.PARTNER_ID, partnerId);
+        startActivity(intent);
     }
 }
