@@ -116,10 +116,9 @@ public class MapFragment extends Fragment {
         user = FirebaseAuth.getInstance().getCurrentUser();
         database = FirebaseDatabase.getInstance().getReference();
 
-        database.child(Database.onlineUsers).addChildEventListener(onlineUserListener);
-
         onlineUserProfiles = new ArrayList<>();
 
+        database.child(Database.onlineUsers).addChildEventListener(onlineUserListener);
     }
 
     @Override

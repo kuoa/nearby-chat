@@ -16,19 +16,19 @@ import java.util.List;
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 
-public class OnlineUsersAdapter extends ArrayAdapter<UserProfile> {
+public class ActiveConversationsAdapter extends ArrayAdapter<UserProfile> {
 
     private OnAdapterInteractionListener activity;
 
     private final int layoutResource;
 
-    private final List<UserProfile> userProfileList;
+    private final List<UserProfile> conversationUsers;
 
-    public OnlineUsersAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<UserProfile> userProfiles) {
-        super(context, resource, userProfiles);
+    public ActiveConversationsAdapter(@NonNull Context context, @LayoutRes int resource, @NonNull List<UserProfile> conversationUsers) {
+        super(context, resource, conversationUsers);
 
         this.layoutResource = resource;
-        this.userProfileList = userProfiles;
+        this.conversationUsers = conversationUsers;
 
         if (context instanceof OnAdapterInteractionListener) {
             activity = (OnAdapterInteractionListener) context;
@@ -46,7 +46,7 @@ public class OnlineUsersAdapter extends ArrayAdapter<UserProfile> {
             convertView = inflater.inflate(layoutResource, null);
         }
 
-        final UserProfile user = userProfileList.get(position);
+        final UserProfile user = conversationUsers.get(position);
 
         TextView userName = (TextView) convertView.findViewById(R.id.active_user_name);
         TextView userBio = (TextView) convertView.findViewById(R.id.active_user_bio);
@@ -56,12 +56,13 @@ public class OnlineUsersAdapter extends ArrayAdapter<UserProfile> {
         userBio.setText(user.bio);
         userAvatar.setImageBitmap(user.avatar);
 
-        //convertView.setOnClickListener(v -> activity.mountChatActivity(user.id));
+        convertView.setOnClickListener(v -> activity.mountChatActivity(user.id));
 
         return convertView;
     }
 
     public interface OnAdapterInteractionListener {
-        
+
+        void mountChatActivity(String partnerId);
     }
 }

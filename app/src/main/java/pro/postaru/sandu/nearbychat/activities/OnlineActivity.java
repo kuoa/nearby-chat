@@ -27,13 +27,15 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import pro.postaru.sandu.nearbychat.MainActivity;
 import pro.postaru.sandu.nearbychat.R;
+import pro.postaru.sandu.nearbychat.adapters.ActiveConversationsAdapter;
 import pro.postaru.sandu.nearbychat.adapters.OnlineFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.adapters.OnlineUsersAdapter;
 import pro.postaru.sandu.nearbychat.constants.Database;
 
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        OnlineUsersAdapter.OnAdapterInteractionListener {
+        OnlineUsersAdapter.OnAdapterInteractionListener,
+        ActiveConversationsAdapter.OnAdapterInteractionListener {
 
     private ViewPager viewPager;
     private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
