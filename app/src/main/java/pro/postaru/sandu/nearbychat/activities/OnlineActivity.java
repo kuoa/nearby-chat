@@ -138,7 +138,7 @@ public class OnlineActivity extends AppCompatActivity
         TextView drawerUserNameView = (TextView) drawerView.findViewById(R.id.drawer_user_name);
         TextView drawerUserBioView = (TextView) drawerView.findViewById(R.id.drawer_user_bio);
         ImageView drawerUserAvatarView = (ImageView) drawerView.findViewById(R.id.drawer_user_avatar);
-
+        //TODO use the function from profileActivity
         SharedPreferences profile = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
 
         String profileUserName = profile.getString(ProfileActivity.USER_NAME_KEY, "User name (default)");

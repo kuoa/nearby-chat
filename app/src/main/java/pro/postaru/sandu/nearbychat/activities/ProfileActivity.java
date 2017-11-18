@@ -2,11 +2,14 @@ package pro.postaru.sandu.nearbychat.activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -15,6 +18,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
@@ -23,7 +27,18 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import pro.postaru.sandu.nearbychat.R;
+import pro.postaru.sandu.nearbychat.constants.Constant;
+import pro.postaru.sandu.nearbychat.constants.Database;
+import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DataValidator;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -40,15 +55,41 @@ public class ProfileActivity extends AppCompatActivity {
             {Manifest.permission.READ_EXTERNAL_STORAGE};
 
     private final Activity activity = this;
-
     private AutoCompleteTextView userNameView;
     private EditText userBioView;
     private Button updateProfileButton;
     private ImageView profileImage;
-
     private SharedPreferences profile;
+    private String picturePath = "";
 
-    private String picturePath;
+    private DatabaseReference database;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private UserProfile userProfile;
+
+    private final ValueEventListener userProfileListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            Log.d(Constant.NEARBY_CHAT, "onDataChange: dataSnapshot = [" + dataSnapshot + "]");
+            UserProfile userProfileLocal = dataSnapshot.getValue(UserProfile.class);
+
+            if (userProfileLocal != null) {
+                userProfile = userProfileLocal;
+                Log.w(Constant.NEARBY_CHAT, "Online profile loaded for id " + ProfileActivity.this.userProfile.getId());
+                saveProfileOffline();
+                initProfileView();
+            } else {
+                Log.w(Constant.NEARBY_CHAT, "Error while loading the online profile");
+            }
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w(Constant.NEARBY_CHAT, "Error database");
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +100,10 @@ public class ProfileActivity extends AppCompatActivity {
         // hide keyboard by default
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
 
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseUser = firebaseAuth.getCurrentUser();
+        database = FirebaseDatabase.getInstance().getReference();
+        userProfile = new UserProfile();
         profile = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
 
         userNameView = (AutoCompleteTextView) findViewById(R.id.username);
@@ -82,6 +127,7 @@ public class ProfileActivity extends AppCompatActivity {
                 }
             }
         });
+
 
         loadProfileData();
     }
@@ -145,15 +191,27 @@ public class ProfileActivity extends AppCompatActivity {
      */
     private void loadProfileData() {
 
-        String profileUserName = profile.getString(ProfileActivity.USER_NAME_KEY, "User name (default)");
-        String profileBio = profile.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)");
-        String avatarPath = profile.getString(ProfileActivity.USER_AVATAR_KEY, "");
 
-        userNameView.setText(profileUserName);
-        userBioView.setText(profileBio);
+        if (isNetworkAvailable()) {
+            //load online information
+            loadProfileOnline();
+        } else {
+            //load offline information
+            userProfile.setUserName(profile.getString(ProfileActivity.USER_NAME_KEY, "User name (default)"));
+            userProfile.setBio(profile.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)"));
+            picturePath = profile.getString(ProfileActivity.USER_AVATAR_KEY, "");
+            initProfileView();
+        }
 
-        if (avatarPath != "") {
-            profileImage.setImageBitmap(BitmapFactory.decodeFile(avatarPath));
+
+    }
+
+    private void initProfileView() {
+        userNameView.setText(userProfile.getUserName());
+        userBioView.setText(userProfile.getBio());
+
+        if (!picturePath.isEmpty()) {
+            profileImage.setImageBitmap(BitmapFactory.decodeFile(picturePath));
         }
     }
 
@@ -187,17 +245,58 @@ public class ProfileActivity extends AppCompatActivity {
         if (errorView != null) {
             errorView.requestFocus();
         } else {
-            SharedPreferences.Editor editor = profile.edit();
+            userProfile.setId(firebaseUser.getUid());
+            userProfile.setUserName(userName);
+            userProfile.setBio(userBio);
+            //for the moment we don't store the bitmap
+            //userProfile.setAvatar(profileImage.getDrawingCache());
 
-            editor.putString(ProfileActivity.USER_NAME_KEY, userName);
-            editor.putString(ProfileActivity.USER_BIO_KEY, userBio);
-            editor.putString(ProfileActivity.USER_AVATAR_KEY, picturePath);
-
-            editor.apply();
+            if (isNetworkAvailable()) {
+                saveProfileOnline();
+            }
+            saveProfileOffline();
         }
 
     }
 
+    /**
+     * Save on the device the current userProfile of the current firebaseUser online
+     */
+    private void saveProfileOffline() {
+        Log.d(Constant.NEARBY_CHAT, "Save profile offline id " + firebaseUser.getUid());
+        SharedPreferences.Editor editor = profile.edit();
+        editor.putString(ProfileActivity.USER_NAME_KEY, userProfile.getUserName());
+        editor.putString(ProfileActivity.USER_BIO_KEY, userProfile.getBio());
+        editor.putString(ProfileActivity.USER_AVATAR_KEY, picturePath);
 
+        editor.apply();
+    }
+
+    /**
+     * Save the current userProfile of the current firebaseUser online
+     */
+    private void saveProfileOnline() {
+        Log.d(Constant.NEARBY_CHAT, "Save profile online for id  " + firebaseUser.getUid());
+        database.child(Database.userProfiles).child(firebaseUser.getUid()).setValue(userProfile);
+    }
+
+    /**
+     * Load userProfile for the current firebaseUser with the online version
+     * Async task
+     */
+    private void loadProfileOnline() {
+        Log.d(Constant.NEARBY_CHAT, "Load profile offline and add listener for id " + firebaseUser.getUid());
+        database.child(Database.userProfiles).child(firebaseUser.getUid()).addListenerForSingleValueEvent(userProfileListener);
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = null;
+        if (connectivityManager != null) {
+            activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        }
+        return activeNetworkInfo != null;
+    }
 }
 
