@@ -196,15 +196,14 @@ public class ProfileActivity extends AppCompatActivity {
             //load online information
             loadProfileOnline();
         } else {
-            //load offline information
-            userProfile.setUserName(profile.getString(ProfileActivity.USER_NAME_KEY, "User name (default)"));
-            userProfile.setBio(profile.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)"));
-            picturePath = profile.getString(ProfileActivity.USER_AVATAR_KEY, "");
+            loadProfileOffline();
+
             initProfileView();
         }
 
 
     }
+
 
     private void initProfileView() {
         userNameView.setText(userProfile.getUserName());
@@ -287,6 +286,13 @@ public class ProfileActivity extends AppCompatActivity {
     private void loadProfileOnline() {
         Log.d(Constant.NEARBY_CHAT, "Load profile offline and add listener for id " + firebaseUser.getUid());
         database.child(Database.userProfiles).child(firebaseUser.getUid()).addListenerForSingleValueEvent(userProfileListener);
+    }
+
+    private void loadProfileOffline() {
+        //load offline information
+        userProfile.setUserName(profile.getString(ProfileActivity.USER_NAME_KEY, "User name (default)"));
+        userProfile.setBio(profile.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)"));
+        picturePath = profile.getString(ProfileActivity.USER_AVATAR_KEY, "");
     }
 
     private boolean isNetworkAvailable() {

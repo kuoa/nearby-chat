@@ -1,9 +1,13 @@
 package pro.postaru.sandu.nearbychat.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -22,29 +26,60 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import pro.postaru.sandu.nearbychat.MainActivity;
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.adapters.ActiveConversationsAdapter;
 import pro.postaru.sandu.nearbychat.adapters.OnlineFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.adapters.OnlineUsersAdapter;
+import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
+import pro.postaru.sandu.nearbychat.models.UserProfile;
 
-//logged => map conversation profile
+//logged => map conversation sharedPreferences
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnlineUsersAdapter.OnAdapterInteractionListener,
         ActiveConversationsAdapter.OnAdapterInteractionListener {
 
+    private UserProfile userProfile;
+
     private ViewPager viewPager;
     private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
-
-
     private FirebaseAuth firebaseAuth;
     private FirebaseUser user;
     private DatabaseReference database;
+    private SharedPreferences sharedPreferences;
+    private DrawerLayout drawer;
+
+
+    private final ValueEventListener userProfileListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            Log.d(Constant.NEARBY_CHAT, "onDataChange: dataSnapshot = [" + dataSnapshot + "]");
+            UserProfile userProfileLocal = dataSnapshot.getValue(UserProfile.class);
+
+            if (userProfileLocal != null) {
+                userProfile = userProfileLocal;
+                Log.w(Constant.NEARBY_CHAT, "Online sharedPreferences loaded for id " + OnlineActivity.this.userProfile.getId());
+
+                initProfileView(drawer);
+            } else {
+                Log.w(Constant.NEARBY_CHAT, "Error while loading the online sharedPreferences");
+            }
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w(Constant.NEARBY_CHAT, "Error database");
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,11 +90,11 @@ public class OnlineActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
 
-        final DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
 
-            // set the user profile info when the drawer is opening
+            // set the user sharedPreferences info when the drawer is opening
             @Override
             public void onDrawerStateChanged(int newState) {
                 if (newState == DrawerLayout.STATE_SETTLING) {
@@ -92,6 +127,8 @@ public class OnlineActivity extends AppCompatActivity
         database = FirebaseDatabase.getInstance().getReference();
 
         user = firebaseAuth.getCurrentUser();
+        sharedPreferences = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
+        userProfile = new UserProfile();
 
         mountMapFragment();
     }
@@ -134,23 +171,13 @@ public class OnlineActivity extends AppCompatActivity
      * @param drawerView the drawer panel
      */
     public void fillDrawerUserProfile(View drawerView) {
-
-        TextView drawerUserNameView = (TextView) drawerView.findViewById(R.id.drawer_user_name);
-        TextView drawerUserBioView = (TextView) drawerView.findViewById(R.id.drawer_user_bio);
-        ImageView drawerUserAvatarView = (ImageView) drawerView.findViewById(R.id.drawer_user_avatar);
-        //TODO use the function from profileActivity
-        SharedPreferences profile = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
-
-        String profileUserName = profile.getString(ProfileActivity.USER_NAME_KEY, "User name (default)");
-        String profileBio = profile.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)");
-        String avatarPath = profile.getString(ProfileActivity.USER_AVATAR_KEY, "");
-
-        drawerUserNameView.setText(profileUserName);
-        drawerUserBioView.setText(profileBio);
-
-        if (!avatarPath.equals("")) {
-            drawerUserAvatarView.setImageBitmap(BitmapFactory.decodeFile(avatarPath));
+        if (isNetworkAvailable()) {
+            loadProfileOnline();
+        } else {
+            loadProfileOffline();
+            initProfileView(drawerView);
         }
+
     }
 
     @Override
@@ -192,7 +219,7 @@ public class OnlineActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
@@ -213,5 +240,48 @@ public class OnlineActivity extends AppCompatActivity
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra(ChatActivity.PARTNER_ID, partnerId);
         startActivity(intent);
+    }
+
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = null;
+        if (connectivityManager != null) {
+            activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        }
+        return activeNetworkInfo != null;
+    }
+
+
+    /**
+     * Load userProfile for the current firebaseUser with the online version
+     * Async task
+     */
+    private void loadProfileOnline() {
+        Log.d(Constant.NEARBY_CHAT, "Load sharedPreferences offline and add listener for id " + user.getUid());
+        database.child(Database.userProfiles).child(user.getUid()).addListenerForSingleValueEvent(userProfileListener);
+    }
+
+    private void loadProfileOffline() {
+        //load offline information
+        userProfile.setUserName(sharedPreferences.getString(ProfileActivity.USER_NAME_KEY, "User name (default)"));
+        userProfile.setBio(sharedPreferences.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)"));
+        //picturePath = sharedPreferences.getString(ProfileActivity.USER_AVATAR_KEY, "");
+    }
+
+    private void initProfileView(View drawerView) {
+
+        TextView drawerUserNameView = (TextView) drawerView.findViewById(R.id.drawer_user_name);
+        TextView drawerUserBioView = (TextView) drawerView.findViewById(R.id.drawer_user_bio);
+        ImageView drawerUserAvatarView = (ImageView) drawerView.findViewById(R.id.drawer_user_avatar);
+
+        drawerUserNameView.setText(userProfile.getUserName());
+        drawerUserBioView.setText(userProfile.getBio());
+
+        String picturePath = "";
+        if (!picturePath.isEmpty()) {
+            drawerUserAvatarView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+        }
     }
 }
