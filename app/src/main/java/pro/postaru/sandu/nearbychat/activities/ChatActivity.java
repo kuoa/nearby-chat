@@ -74,10 +74,10 @@ public class ChatActivity extends AppCompatActivity {
             Message message = new Message();
             message.setText("Message " + i);
             message.setMine(i % 2 == 0);
-            conversation.getMessages().add(message);
+            //conversation.getMessages().add(message);
         }
 
-        chatAdapter = new ChatAdapter(this, R.layout.chat_entry, conversation.getMessages());
+        //chatAdapter = new ChatAdapter(this, R.layout.chat_entry, conversation.getMessages());
 
         // get conversation partner
 
@@ -95,7 +95,7 @@ public class ChatActivity extends AppCompatActivity {
         messageListView.setVisibility(View.GONE);
 
         messageListView.setAdapter(chatAdapter);
-        messageListView.setSelection(conversation.getMessages().size() - 1);
+        //messageListView.setSelection(conversation.getMessages().size() - 1);
 
     }
 

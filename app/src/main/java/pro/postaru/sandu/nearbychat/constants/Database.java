@@ -5,5 +5,6 @@ public class Database {
     public static final String userProfiles = "userProfiles";
     public static final String onlineUsers = "onlineUsers";
 
-    public static final String conversations = "conversations";
+    public static final String userMessages = "userMessages";
+    public static final String userConversations = "userConversations";
 }

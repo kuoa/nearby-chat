@@ -14,12 +14,17 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.List;
+
 import pro.postaru.sandu.nearbychat.activities.OnlineActivity;
 import pro.postaru.sandu.nearbychat.adapters.MainFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.fragments.LoginFragment;
 import pro.postaru.sandu.nearbychat.fragments.RegisterFragment;
 import pro.postaru.sandu.nearbychat.models.OnlineUser;
+import pro.postaru.sandu.nearbychat.models.UserConversations;
+import pro.postaru.sandu.nearbychat.models.UserMessages;
+import pro.postaru.sandu.nearbychat.utils.Utils;
 
 
 public class MainActivity extends AppCompatActivity
@@ -85,6 +90,27 @@ public class MainActivity extends AppCompatActivity
 
                         registerOnlineUser();
                         mountOnlineActivity();
+
+                        // INSERT DUMMY DATA
+                        List<UserConversations> ucs = Utils.createDummyUserConversations();
+
+                        database.child(Database.userConversations)
+                                .child(ucs.get(0).getOwnerId())
+                                .setValue(ucs.get(0));
+
+                        database.child(Database.userConversations)
+                                .child(ucs.get(1).getOwnerId())
+                                .setValue(ucs.get(1));
+
+                        List<UserMessages> ums = Utils.createDummyUserMessages();
+
+                        database.child(Database.userMessages)
+                                .child(ums.get(0).getOwnerId())
+                                .setValue(ums.get(0));
+
+                        database.child(Database.userMessages)
+                                .child(ums.get(1).getOwnerId())
+                                .setValue(ums.get(1));
 
                         Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
                     } else {

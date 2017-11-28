@@ -2,19 +2,16 @@ package pro.postaru.sandu.nearbychat.models;
 
 import com.google.firebase.database.IgnoreExtraProperties;
 
+import java.util.List;
 import java.util.Map;
 
 @IgnoreExtraProperties
-public class UserConversations {
+public class UserMessages {
 
     private String id;
     private String ownerId;
-    private Map<String, Conversation> conversations;
+    private Map<String, List<Message>> messages;
 
-
-    // required empty constructor for firebase loading
-    public UserConversations(){
-    }
 
     public String getId() {
         return id;
@@ -24,19 +21,19 @@ public class UserConversations {
         this.id = id;
     }
 
-    public Map<String, Conversation> getConversations() {
-        return conversations;
-    }
-
-    public void setConversations(Map<String, Conversation> conversations) {
-        this.conversations = conversations;
-    }
-
     public String getOwnerId() {
         return ownerId;
     }
 
     public void setOwnerId(String ownerId) {
         this.ownerId = ownerId;
+    }
+
+    public Map<String, List<Message>> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(Map<String, List<Message>> messages) {
+        this.messages = messages;
     }
 }
