@@ -50,6 +50,7 @@
         android:layout_above="@+id/chat_form"
         android:listSelector="@android:color/transparent"
         android:transcriptMode="alwaysScroll"
-        android:divider="@null" />
+        android:divider="@null"
+        android:paddingTop="@dimen/activity_vertical_margin" />
 
 </RelativeLayout>

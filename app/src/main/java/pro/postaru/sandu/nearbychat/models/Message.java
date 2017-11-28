@@ -11,8 +11,9 @@ public class Message {
     private String senderId;
     private String text;
     private Date date;
-    private boolean mine;
+
     // required empty constructor for firebase loading
+
     public Message() {
     }
 
@@ -48,11 +49,4 @@ public class Message {
         this.date = date;
     }
 
-    public boolean isMine() {
-        return mine;
-    }
-
-    public void setMine(boolean mine) {
-        this.mine = mine;
-    }
 }

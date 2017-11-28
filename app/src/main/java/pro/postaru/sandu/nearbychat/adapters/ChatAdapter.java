@@ -12,6 +12,9 @@ import android.widget.ArrayAdapter;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
@@ -25,12 +28,16 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
     private final List<Message> messages;
 
+    private FirebaseUser user;
+
     public ChatAdapter(@NonNull Activity activity, @LayoutRes int resource, @NonNull List<Message> messages) {
         super(activity, resource, messages);
 
         this.activity = activity;
         this.layoutResource = resource;
         this.messages = messages;
+
+        user = FirebaseAuth.getInstance().getCurrentUser();
     }
 
 
@@ -50,7 +57,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageView.getLayoutParams();
 
         // custom style for a message sent by me
-        if (message.isMine()) {
+        if (message.getSenderId().equals(user.getUid())) {
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
             messageView.setBackgroundResource(R.drawable.rounded_corner_sent);

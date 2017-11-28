@@ -32,6 +32,7 @@ public class MapFragment extends Fragment {
     private ListView onlineUsersView;
 
     private OnlineUsersAdapter onlineUsersAdapter;
+
     private final ChildEventListener onlineUserListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -46,14 +47,11 @@ public class MapFragment extends Fragment {
 
                 Log.w("BBB", "id " + userProfile.getId());
 
-                onlineUserProfiles.add(userProfile);
+                onlineUsersAdapter.add(userProfile);
 
             } else {
                 Log.w("BBB", "No online users");
             }
-
-            onlineUsersAdapter.notifyDataSetChanged();
-
         }
 
         @Override
@@ -94,7 +92,9 @@ public class MapFragment extends Fragment {
             Log.w("BBB", "loadPost:onCancelled", databaseError.toException());
         }
     };
+
     private FirebaseUser user;
+
     private DatabaseReference database;
 
     public MapFragment() {
@@ -131,5 +131,13 @@ public class MapFragment extends Fragment {
         onlineUsersView.setAdapter(onlineUsersAdapter);
 
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        database.child(Database.onlineUsers).removeEventListener(onlineUserListener);
+
     }
 }

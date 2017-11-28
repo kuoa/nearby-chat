@@ -3,6 +3,7 @@ package pro.postaru.sandu.nearbychat.activities;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -12,12 +13,19 @@ import android.widget.ProgressBar;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.adapters.ChatAdapter;
-import pro.postaru.sandu.nearbychat.models.Conversation;
+import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.models.Message;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 
@@ -26,8 +34,9 @@ public class ChatActivity extends AppCompatActivity {
     public static final String PARTNER_ID = "PARTNER_ID";
 
     private String partnerId;
+    private String conversationId;
 
-    private Conversation conversation;
+    private List<Message> messages;
 
     private ChatAdapter chatAdapter;
 
@@ -39,10 +48,47 @@ public class ChatActivity extends AppCompatActivity {
 
     private UserProfile conversationPartner;
 
-
     private FirebaseAuth auth;
     private FirebaseUser user;
     private DatabaseReference database;
+
+    private final ChildEventListener messageListener = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+            Message message = dataSnapshot.getValue(Message.class);
+
+            if (message != null) {
+                chatAdapter.add(message);
+                messageListView.setSelection(messages.size() - 1);
+            } else {
+                Log.w("BBB", "No messages");
+            }
+
+            if (progressBar.getVisibility() == View.VISIBLE) {
+                hideProgressBar();
+            }
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w("BBB", "loadPost:onCancelled", databaseError.toException());
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,22 +114,24 @@ public class ChatActivity extends AppCompatActivity {
         messageSendButton = (ImageButton) findViewById(R.id.message_send);
         messageSendButton.setOnClickListener(v -> sendMessage());
 
-        conversation = new Conversation("id", user.getUid(), partnerId);
+        messages = new ArrayList<>();
 
-        for (int i = 0; i < 20; i++) {
-            Message message = new Message();
-            message.setText("Message " + i);
-            message.setMine(i % 2 == 0);
-            //conversation.getMessages().add(message);
-        }
+        Log.w("BBB", getConversationId(partnerId));
 
-        //chatAdapter = new ChatAdapter(this, R.layout.chat_entry, conversation.getMessages());
+        conversationId = getConversationId(partnerId);
 
-        // get conversation partner
+        database.child(Database.userMessages)
+                .child(conversationId)
+                .child("messages")
+                .addChildEventListener(messageListener);
+
+
+        chatAdapter = new ChatAdapter(this, R.layout.chat_entry, messages);
 
 
         conversationPartner = new UserProfile();
-        conversationPartner.setUserName("TESTING");
+        conversationPartner.setUserName(partnerId);
+        conversationPartner.setUserName(partnerId);
 
         // set conversation title
         setTitle(conversationPartner.getUserName());
@@ -95,8 +143,6 @@ public class ChatActivity extends AppCompatActivity {
         messageListView.setVisibility(View.GONE);
 
         messageListView.setAdapter(chatAdapter);
-        //messageListView.setSelection(conversation.getMessages().size() - 1);
-
     }
 
     public void sendMessage() {
@@ -104,10 +150,51 @@ public class ChatActivity extends AppCompatActivity {
         String content = messageEditView.getText().toString();
         messageEditView.setText("");
 
-        Message message = new Message();
-        message.setMine(true);
-        message.setText(content);
+        Message newMessage = new Message();
+        newMessage.setText(content);
+        newMessage.setDate(new Date());
+        newMessage.setSenderId(user.getUid());
 
-        chatAdapter.add(message);
+        String id = database.child(Database.userMessages)
+                .child(conversationId)
+                .child("messages")
+                .push()
+                .getKey();
+
+        newMessage.setId(id);
+
+        database.child(Database.userMessages)
+                .child(conversationId)
+                .child("messages")
+                .child(id)
+                .setValue(newMessage);
     }
+
+    private String getConversationId(String partnerId) {
+        String myId = user.getUid();
+
+        if (myId.compareTo(partnerId) < 0) {
+            return myId + "-" + partnerId;
+        } else {
+            return partnerId + "-" + myId;
+        }
+    }
+
+    private void hideProgressBar() {
+        progressBar.setVisibility(View.GONE);
+
+        messageListView.setVisibility(View.VISIBLE);
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        database.child(Database.userMessages)
+                .child(conversationId)
+                .child("messages")
+                .removeEventListener(messageListener);
+    }
+
 }
