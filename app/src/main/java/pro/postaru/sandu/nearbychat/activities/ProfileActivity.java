@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -40,11 +39,11 @@ import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DataValidator;
+import pro.postaru.sandu.nearbychat.utils.Network;
 
 public class ProfileActivity extends AppCompatActivity {
 
     public static final String USER_INFO_PREFS = "pro.postaru.sandu.nearbychat.USER_INFO_PREFS";
-
     public static final String USER_NAME_KEY = "pro.postaru.sandu.nearbychat.USER_NAME";
     public static final String USER_BIO_KEY = "pro.postaru.sandu.nearbychat.BIO";
     public static final String USER_AVATAR_KEY = "pro.postaru.sandu.nearbychat.AVATAR";
@@ -55,11 +54,13 @@ public class ProfileActivity extends AppCompatActivity {
             {Manifest.permission.READ_EXTERNAL_STORAGE};
 
     private final Activity activity = this;
+
     private AutoCompleteTextView userNameView;
     private EditText userBioView;
     private Button updateProfileButton;
     private ImageView profileImage;
     private SharedPreferences profile;
+
     private String picturePath = "";
 
     private DatabaseReference database;
@@ -190,9 +191,10 @@ public class ProfileActivity extends AppCompatActivity {
      * Loads the user profile and fills the image and user information
      */
     private void loadProfileData() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-
-        if (isNetworkAvailable()) {
+        if (Network.isAvailable(connectivityManager)) {
             //load online information
             loadProfileOnline();
         } else {
@@ -200,8 +202,6 @@ public class ProfileActivity extends AppCompatActivity {
 
             initProfileView();
         }
-
-
     }
 
 
@@ -250,7 +250,10 @@ public class ProfileActivity extends AppCompatActivity {
             //for the moment we don't store the bitmap
             //userProfile.setAvatar(profileImage.getDrawingCache());
 
-            if (isNetworkAvailable()) {
+            ConnectivityManager connectivityManager
+                    = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+            if (Network.isAvailable(connectivityManager)) {
                 saveProfileOnline();
             }
             saveProfileOffline();
@@ -295,14 +298,5 @@ public class ProfileActivity extends AppCompatActivity {
         picturePath = profile.getString(ProfileActivity.USER_AVATAR_KEY, "");
     }
 
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = null;
-        if (connectivityManager != null) {
-            activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        }
-        return activeNetworkInfo != null;
-    }
 }
 

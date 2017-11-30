@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
 
-
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference();
     }
@@ -86,29 +85,6 @@ public class MainActivity extends AppCompatActivity
                         registerOnlineUser();
                         mountOnlineActivity();
 
-
-                        // INSERT DUMMY DATA
-                        /*
-                        List<UserConversations> ucs = Utils.createDummyUserConversations();
-
-                        database.child(Database.userConversations)
-                                .child(ucs.get(0).getOwnerId())
-                                .setValue(ucs.get(0));
-
-                        database.child(Database.userConversations)
-                                .child(ucs.get(1).getOwnerId())
-                                .setValue(ucs.get(1));
-
-
-*/
-                        /*
-                        UserMessages ums = Utils.createDummyUserMessages();
-
-                        database.child(Database.userMessages)
-                                .child("RpmFbBK2pGPK7zorutFJrg0XZpL2-XXXFbBK2pGPK7zorutFJrg0XZpL2")
-                                .setValue(ums);
-
-*/
                         Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
                     } else {
                         // If sign in fails, display a message to the user.

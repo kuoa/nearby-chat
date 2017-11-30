@@ -2,6 +2,8 @@ package pro.postaru.sandu.nearbychat.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -40,16 +42,29 @@ public class ChatActivity extends AppCompatActivity {
 
     private EditText messageEditView;
     private ImageButton messageSendButton;
+    private final TextWatcher editMessageTextWatcher = new TextWatcher() {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            if (s.length() == 0) {
+                messageSendButton.setEnabled(false);
+            } else {
+                messageSendButton.setEnabled(true);
+            }
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+
+        }
+    };
     private ListView messageListView;
-
     private ProgressBar progressBar;
-
-    private UserProfile conversationPartner;
-
-    private FirebaseAuth auth;
-    private FirebaseUser user;
-    private DatabaseReference database;
-
     private final ChildEventListener messageListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -87,6 +102,10 @@ public class ChatActivity extends AppCompatActivity {
             Log.w("BBB", "loadPost:onCancelled", databaseError.toException());
         }
     };
+    private UserProfile conversationPartner;
+    private FirebaseAuth auth;
+    private FirebaseUser user;
+    private DatabaseReference database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,13 +124,13 @@ public class ChatActivity extends AppCompatActivity {
         conversationPartner = (UserProfile) getIntent().getSerializableExtra(PARTNER_USER_PROFILE);
 
         messageEditView = (EditText) findViewById(R.id.message_edit);
+        messageEditView.addTextChangedListener(editMessageTextWatcher);
 
         messageSendButton = (ImageButton) findViewById(R.id.message_send);
+        messageSendButton.setEnabled(false);
         messageSendButton.setOnClickListener(v -> sendMessage());
 
         messages = new ArrayList<>();
-
-        Log.w("BBB", getConversationId(conversationPartner.getId()));
 
         conversationId = getConversationId(conversationPartner.getId());
 
@@ -120,19 +139,17 @@ public class ChatActivity extends AppCompatActivity {
                 .child("messages")
                 .addChildEventListener(messageListener);
 
-
         chatAdapter = new ChatAdapter(this, R.layout.chat_entry, messages);
+        messageListView = (ListView) findViewById(R.id.message_list);
+        messageListView.setVisibility(View.GONE);
+
+        messageListView.setAdapter(chatAdapter);
 
         // set conversation title
         setTitle(conversationPartner.getUserName());
 
         // hide keyboard by default
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-
-        messageListView = (ListView) findViewById(R.id.message_list);
-        messageListView.setVisibility(View.GONE);
-
-        messageListView.setAdapter(chatAdapter);
     }
 
     public void sendMessage() {

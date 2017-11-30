@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -40,6 +39,7 @@ import pro.postaru.sandu.nearbychat.adapters.OnlineUsersAdapter;
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
+import pro.postaru.sandu.nearbychat.utils.Network;
 
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -161,13 +161,14 @@ public class OnlineActivity extends AppCompatActivity
      * @param drawerView the drawer panel
      */
     public void fillDrawerUserProfile(View drawerView) {
-        if (isNetworkAvailable()) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if (Network.isAvailable(connectivityManager)) {
             loadProfileOnline();
         } else {
             loadProfileOffline();
             initProfileView(drawerView);
         }
-
     }
 
     @Override
@@ -230,17 +231,6 @@ public class OnlineActivity extends AppCompatActivity
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra(ChatActivity.PARTNER_USER_PROFILE, userProfile);
         startActivity(intent);
-    }
-
-
-    private boolean isNetworkAvailable() {
-        ConnectivityManager connectivityManager
-                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = null;
-        if (connectivityManager != null) {
-            activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        }
-        return activeNetworkInfo != null;
     }
 
 
