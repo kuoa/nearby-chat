@@ -7,6 +7,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,6 +33,7 @@ public class MainActivity extends AppCompatActivity
     private DatabaseReference database;
 
     private ViewPager viewPager;
+    private ProgressBar progressBar;
 
     private MainFragmentPagerAdapter mainFragmentPagerAdapter;
 
@@ -46,6 +49,8 @@ public class MainActivity extends AppCompatActivity
 
         viewPager = (ViewPager) findViewById(R.id.container_main);
         viewPager.setAdapter(mainFragmentPagerAdapter);
+
+        progressBar = (ProgressBar) findViewById(R.id.main_spinner);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs_main);
 
@@ -75,6 +80,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void requestLogin(String email, String password) {
 
+        progressBar.setVisibility(View.VISIBLE);
+
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
@@ -92,11 +99,15 @@ public class MainActivity extends AppCompatActivity
                         Toast.makeText(MainActivity.this, "Authentication failed.",
                                 Toast.LENGTH_SHORT).show();
                     }
+
+                    progressBar.setVisibility(View.GONE);
                 });
     }
 
     @Override
     public void requestRegister(String username, String email, String password) {
+
+        progressBar.setVisibility(View.VISIBLE);
 
         auth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
@@ -115,6 +126,8 @@ public class MainActivity extends AppCompatActivity
                         Toast.makeText(MainActivity.this, "Authentication failed.",
                                 Toast.LENGTH_SHORT).show();
                     }
+
+                    progressBar.setVisibility(View.GONE);
                 });
     }
 
@@ -130,4 +143,5 @@ public class MainActivity extends AppCompatActivity
         Intent intent = new Intent(this, OnlineActivity.class);
         startActivity(intent);
     }
+
 }

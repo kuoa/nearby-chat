@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -49,14 +50,7 @@ public class OnlineActivity extends AppCompatActivity
     private UserProfile userProfile;
 
     private ViewPager viewPager;
-    private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser user;
-    private DatabaseReference database;
-    private SharedPreferences sharedPreferences;
     private DrawerLayout drawer;
-
-
     private final ValueEventListener userProfileListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -71,7 +65,6 @@ public class OnlineActivity extends AppCompatActivity
             } else {
                 Log.w(Constant.NEARBY_CHAT, "Error while loading the online sharedPreferences");
             }
-
         }
 
         @Override
@@ -79,6 +72,12 @@ public class OnlineActivity extends AppCompatActivity
             Log.w(Constant.NEARBY_CHAT, "Error database");
         }
     };
+    private ProgressBar progressBar;
+    private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser user;
+    private DatabaseReference database;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +89,8 @@ public class OnlineActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+
+
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
 
@@ -161,6 +162,11 @@ public class OnlineActivity extends AppCompatActivity
      * @param drawerView the drawer panel
      */
     public void fillDrawerUserProfile(View drawerView) {
+
+        progressBar = (ProgressBar) drawerView.findViewById(R.id.drawer_spinner);
+
+        progressBar.setVisibility(View.VISIBLE);
+
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         if (Network.isAvailable(connectivityManager)) {
@@ -169,6 +175,8 @@ public class OnlineActivity extends AppCompatActivity
             loadProfileOffline();
             initProfileView(drawerView);
         }
+
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override

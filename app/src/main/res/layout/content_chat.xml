@@ -11,35 +11,36 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"/>
+        android:layout_centerVertical="true"
+        android:visibility="visible" />
 
 
     <LinearLayout
         android:id="@+id/chat_form"
-        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:layout_alignParentBottom="true">
+        android:paddingTop="@dimen/activity_vertical_margin">
 
 
         <EditText
             android:id="@+id/message_edit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:inputType="textMultiLine"
+            android:layout_weight="0.8"
             android:hint="@string/typeMessage"
-            android:layout_weight="0.8" />
+            android:inputType="textMultiLine" />
 
         <ImageButton
             android:id="@+id/message_send"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            app:srcCompat="@drawable/ic_send_black"
-            android:background="@android:color/transparent" />
+            android:background="@android:color/transparent"
+            app:srcCompat="@drawable/ic_send_black" />
 
     </LinearLayout>
 
@@ -48,9 +49,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/chat_form"
-        android:listSelector="@android:color/transparent"
-        android:transcriptMode="alwaysScroll"
         android:divider="@null"
-        android:paddingTop="@dimen/activity_vertical_margin" />
+        android:listSelector="@android:color/transparent"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:transcriptMode="alwaysScroll" />
 
 </RelativeLayout>

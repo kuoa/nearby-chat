@@ -119,7 +119,6 @@ public class ChatActivity extends AppCompatActivity {
         // spinner
 
         progressBar = (ProgressBar) findViewById(R.id.chat_spinner);
-        progressBar.setVisibility(View.VISIBLE);
 
         conversationPartner = (UserProfile) getIntent().getSerializableExtra(PARTNER_USER_PROFILE);
 

@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -36,7 +37,28 @@ public class ConversationsFragment extends Fragment {
     private ActiveConversationsAdapter activeConversationsAdapter;
 
     private ListView conversationsView;
+    private ProgressBar mainProgresBar;
+    private final ValueEventListener getUserProfileListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
 
+            UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
+
+            mainProgresBar.setVisibility(View.GONE);
+
+            if (userProfile != null) {
+                activeConversationsAdapter.add(userProfile);
+            }
+
+            Log.w("BBB", "id " + userProfile.getId());
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w("BBB", "Canceled profile request");
+
+        }
+    };
     private final ChildEventListener userConversationsListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -73,23 +95,6 @@ public class ConversationsFragment extends Fragment {
         }
     };
 
-    private final ValueEventListener getUserProfileListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-
-            UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
-            activeConversationsAdapter.add(userProfile);
-
-            Log.w("BBB", "id " + userProfile.getId());
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-            Log.w("BBB", "Canceled profile request");
-
-        }
-    };
-
     public ConversationsFragment() {
     }
 
@@ -107,6 +112,9 @@ public class ConversationsFragment extends Fragment {
         database = FirebaseDatabase.getInstance().getReference();
 
         conversationProfiles = new ArrayList<>();
+
+        mainProgresBar = (ProgressBar) getActivity().findViewById(R.id.online_spinner);
+        mainProgresBar.setVisibility(View.VISIBLE);
 
         database.child(Database.userConversations)
                 .child(user.getUid())

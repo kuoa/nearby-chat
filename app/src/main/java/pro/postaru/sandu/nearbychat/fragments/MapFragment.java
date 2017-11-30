@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -31,9 +32,32 @@ public class MapFragment extends Fragment {
     private List<UserProfile> onlineUserProfiles;
 
     private ListView onlineUsersView;
+    private ProgressBar mainProgresBar;
 
     private OnlineUsersAdapter onlineUsersAdapter;
+    private final ValueEventListener getUserProfileListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
 
+            UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
+
+            mainProgresBar.setVisibility(View.GONE);
+
+            if (userProfile != null) {
+                onlineUsersAdapter.add(userProfile);
+            }
+
+            Log.w("BBB", "id " + userProfile.getId());
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w("BBB", "Canceled profile request");
+
+        }
+    };
+    private FirebaseUser user;
+    private DatabaseReference database;
     private final ChildEventListener onlineUserListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -87,27 +111,6 @@ public class MapFragment extends Fragment {
         }
     };
 
-    private final ValueEventListener getUserProfileListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-
-            UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
-            onlineUsersAdapter.add(userProfile);
-
-            Log.w("BBB", "id " + userProfile.getId());
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-            Log.w("BBB", "Canceled profile request");
-
-        }
-    };
-
-    private FirebaseUser user;
-
-    private DatabaseReference database;
-
     public MapFragment() {
     }
 
@@ -125,7 +128,11 @@ public class MapFragment extends Fragment {
 
         onlineUserProfiles = new ArrayList<>();
 
+        mainProgresBar = (ProgressBar) getActivity().findViewById(R.id.online_spinner);
+        mainProgresBar.setVisibility(View.VISIBLE);
+
         database.child(Database.onlineUsers).addChildEventListener(onlineUserListener);
+
     }
 
     @Override

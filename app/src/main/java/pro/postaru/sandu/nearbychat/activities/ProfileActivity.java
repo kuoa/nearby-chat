@@ -19,11 +19,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -59,6 +59,8 @@ public class ProfileActivity extends AppCompatActivity {
     private EditText userBioView;
     private Button updateProfileButton;
     private ImageView profileImage;
+    private ProgressBar progressBar;
+
     private SharedPreferences profile;
 
     private String picturePath = "";
@@ -98,17 +100,18 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
 
-        // hide keyboard by default
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         database = FirebaseDatabase.getInstance().getReference();
+
         userProfile = new UserProfile();
         profile = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
 
         userNameView = (AutoCompleteTextView) findViewById(R.id.username);
+        userNameView.requestFocus();
         userBioView = (EditText) findViewById(R.id.bio);
+
+        progressBar = (ProgressBar) findViewById(R.id.profile_spinner);
 
         updateProfileButton = (Button) findViewById(R.id.update_profile_button);
         updateProfileButton.setOnClickListener(v -> {
@@ -202,6 +205,8 @@ public class ProfileActivity extends AppCompatActivity {
 
             initProfileView();
         }
+
+        progressBar.setVisibility(View.GONE);
     }
 
 
@@ -215,6 +220,8 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void saveProfileData() {
+
+        progressBar.setVisibility(View.VISIBLE);
 
         // Reset errors.
         userNameView.setError(null);
@@ -258,6 +265,8 @@ public class ProfileActivity extends AppCompatActivity {
             }
             saveProfileOffline();
         }
+
+        progressBar.setVisibility(View.GONE);
 
     }
 
