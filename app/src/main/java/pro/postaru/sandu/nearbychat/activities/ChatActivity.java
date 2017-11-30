@@ -2,7 +2,6 @@ package pro.postaru.sandu.nearbychat.activities;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -31,9 +30,8 @@ import pro.postaru.sandu.nearbychat.models.UserProfile;
 
 public class ChatActivity extends AppCompatActivity {
 
-    public static final String PARTNER_ID = "PARTNER_ID";
+    public static final String PARTNER_USER_PROFILE = "PARTNER_USER_PROFILE";
 
-    private String partnerId;
     private String conversationId;
 
     private List<Message> messages;
@@ -99,15 +97,12 @@ public class ChatActivity extends AppCompatActivity {
         database = FirebaseDatabase.getInstance().getReference();
         user = auth.getCurrentUser();
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_chat);
-        setSupportActionBar(toolbar);
-
         // spinner
 
         progressBar = (ProgressBar) findViewById(R.id.chat_spinner);
         progressBar.setVisibility(View.VISIBLE);
 
-        partnerId = getIntent().getStringExtra(PARTNER_ID);
+        conversationPartner = (UserProfile) getIntent().getSerializableExtra(PARTNER_USER_PROFILE);
 
         messageEditView = (EditText) findViewById(R.id.message_edit);
 
@@ -116,9 +111,9 @@ public class ChatActivity extends AppCompatActivity {
 
         messages = new ArrayList<>();
 
-        Log.w("BBB", getConversationId(partnerId));
+        Log.w("BBB", getConversationId(conversationPartner.getId()));
 
-        conversationId = getConversationId(partnerId);
+        conversationId = getConversationId(conversationPartner.getId());
 
         database.child(Database.userMessages)
                 .child(conversationId)
@@ -127,11 +122,6 @@ public class ChatActivity extends AppCompatActivity {
 
 
         chatAdapter = new ChatAdapter(this, R.layout.chat_entry, messages);
-
-
-        conversationPartner = new UserProfile();
-        conversationPartner.setUserName(partnerId);
-        conversationPartner.setUserName(partnerId);
 
         // set conversation title
         setTitle(conversationPartner.getUserName());

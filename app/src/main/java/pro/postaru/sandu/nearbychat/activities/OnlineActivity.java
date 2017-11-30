@@ -41,7 +41,6 @@ import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 
-//logged => map conversation sharedPreferences
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnlineUsersAdapter.OnAdapterInteractionListener,
@@ -129,8 +128,6 @@ public class OnlineActivity extends AppCompatActivity
         user = firebaseAuth.getCurrentUser();
         sharedPreferences = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
         userProfile = new UserProfile();
-
-        mountMapFragment();
     }
 
     // activity logic
@@ -155,13 +152,6 @@ public class OnlineActivity extends AppCompatActivity
         startActivity(intent);
     }
 
-    public void mountMapFragment() {
-        /*
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_container_online, MapFragment.newInstance());
-        ft.commit();
-         */
-    }
 
     // view logic
 
@@ -236,9 +226,9 @@ public class OnlineActivity extends AppCompatActivity
     }
 
     @Override
-    public void mountChatActivity(String partnerId) {
+    public void mountChatActivity(UserProfile userProfile) {
         Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra(ChatActivity.PARTNER_ID, partnerId);
+        intent.putExtra(ChatActivity.PARTNER_USER_PROFILE, userProfile);
         startActivity(intent);
     }
 

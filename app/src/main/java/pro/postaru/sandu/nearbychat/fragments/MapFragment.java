@@ -15,6 +15,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,15 +40,11 @@ public class MapFragment extends Fragment {
 
             OnlineUser onlineUser = dataSnapshot.getValue(OnlineUser.class);
 
+            // new online user => hook up the profile listener
             if (onlineUser != null) {
-                UserProfile userProfile = new UserProfile();
-                userProfile.setUserName(onlineUser.getId());
-                userProfile.setId(onlineUser.getId());
-                userProfile.setBio("No bio");
-
-                Log.w("BBB", "id " + userProfile.getId());
-
-                onlineUsersAdapter.add(userProfile);
+                database.child(Database.userProfiles)
+                        .child(onlineUser.getId())
+                        .addListenerForSingleValueEvent(getUserProfileListener);
 
             } else {
                 Log.w("BBB", "No online users");
@@ -72,14 +69,11 @@ public class MapFragment extends Fragment {
 
                 Log.w("BBB", "remove id " + userProfile.getId());
 
-                onlineUserProfiles.remove(userProfile);
+                onlineUsersAdapter.remove(userProfile);
 
             } else {
                 Log.w("BBB", "No online users");
             }
-
-            onlineUsersAdapter.notifyDataSetChanged();
-
         }
 
         @Override
@@ -93,6 +87,23 @@ public class MapFragment extends Fragment {
         }
     };
 
+    private final ValueEventListener getUserProfileListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+
+            UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
+            onlineUsersAdapter.add(userProfile);
+
+            Log.w("BBB", "id " + userProfile.getId());
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w("BBB", "Canceled profile request");
+
+        }
+    };
+
     private FirebaseUser user;
 
     private DatabaseReference database;
@@ -102,9 +113,7 @@ public class MapFragment extends Fragment {
 
 
     public static MapFragment newInstance() {
-        MapFragment fragment = new MapFragment();
-
-        return fragment;
+        return new MapFragment();
     }
 
     @Override

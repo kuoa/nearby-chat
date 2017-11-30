@@ -15,6 +15,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,8 @@ public class ConversationsFragment extends Fragment {
 
     private ActiveConversationsAdapter activeConversationsAdapter;
 
+    private ListView conversationsView;
+
     private final ChildEventListener userConversationsListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -41,12 +44,10 @@ public class ConversationsFragment extends Fragment {
             Conversation conversation = dataSnapshot.getValue(Conversation.class);
 
             if (conversation != null) {
-                UserProfile userProfile = new UserProfile();
-                userProfile.setUserName(conversation.getPartnerId());
-                userProfile.setId(conversation.getPartnerId());
-                userProfile.setBio("No bio");
 
-                activeConversationsAdapter.add(userProfile);
+                database.child(Database.userProfiles)
+                        .child(conversation.getPartnerId())
+                        .addListenerForSingleValueEvent(getUserProfileListener);
             } else {
                 Log.w("BBB", "No conversations");
             }
@@ -72,17 +73,29 @@ public class ConversationsFragment extends Fragment {
         }
     };
 
+    private final ValueEventListener getUserProfileListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
 
-    private ListView conversationsView;
+            UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
+            activeConversationsAdapter.add(userProfile);
+
+            Log.w("BBB", "id " + userProfile.getId());
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w("BBB", "Canceled profile request");
+
+        }
+    };
 
     public ConversationsFragment() {
     }
 
 
     public static ConversationsFragment newInstance() {
-        ConversationsFragment fragment = new ConversationsFragment();
-
-        return fragment;
+        return new ConversationsFragment();
     }
 
 

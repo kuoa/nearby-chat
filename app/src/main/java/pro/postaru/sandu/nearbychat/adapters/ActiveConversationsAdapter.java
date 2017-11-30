@@ -36,7 +36,7 @@ public class ActiveConversationsAdapter extends ArrayAdapter<UserProfile> {
         }
     }
 
-    @Override
+    @Override @NonNull
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent){
 
         if(convertView == null){
@@ -44,23 +44,23 @@ public class ActiveConversationsAdapter extends ArrayAdapter<UserProfile> {
             convertView = inflater.inflate(layoutResource, null);
         }
 
-        final UserProfile user = conversationUsers.get(position);
+        final UserProfile userProfile = conversationUsers.get(position);
 
         TextView userName = (TextView) convertView.findViewById(R.id.active_user_name);
         TextView userBio = (TextView) convertView.findViewById(R.id.active_user_bio);
         ImageView userAvatar = (ImageView) convertView.findViewById(R.id.active_user_avatar);
 
-        userName.setText(user.getUserName());
-        userBio.setText(user.getBio());
-        userAvatar.setImageBitmap(user.getAvatar());
+        userName.setText(userProfile.getUserName());
+        userBio.setText(userProfile.getBio());
+        userAvatar.setImageBitmap(userProfile.getAvatar());
 
-        convertView.setOnClickListener(v -> activity.mountChatActivity(user.getId()));
+        convertView.setOnClickListener(v -> activity.mountChatActivity(userProfile));
 
         return convertView;
     }
 
     public interface OnAdapterInteractionListener {
 
-        void mountChatActivity(String partnerId);
+        void mountChatActivity(UserProfile partnerUserProfile);
     }
 }

@@ -38,8 +38,11 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:label="@string/title_activity_chat"
-            android:name=".activities.ChatActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:name=".activities.ChatActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.OnlineActivity" />
+        </activity>
     </application>
 
 </manifest>
