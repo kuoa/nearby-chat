@@ -2,7 +2,7 @@ package pro.postaru.sandu.nearbychat.activities;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -31,6 +31,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import pro.postaru.sandu.nearbychat.MainActivity;
 import pro.postaru.sandu.nearbychat.R;
@@ -41,6 +43,8 @@ import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.Network;
+
+import static pro.postaru.sandu.nearbychat.constants.Constant.FIREBASE_STORAGE_REFERENCE;
 
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -59,7 +63,7 @@ public class OnlineActivity extends AppCompatActivity
 
             if (userProfileLocal != null) {
                 userProfile = userProfileLocal;
-                Log.w(Constant.NEARBY_CHAT, "Online sharedPreferences loaded for id " + OnlineActivity.this.userProfile.getId());
+                Log.w(Constant.NEARBY_CHAT, "Online profile loaded for id " + OnlineActivity.this.userProfile.getId());
 
                 initProfileView(drawer);
             } else {
@@ -75,9 +79,10 @@ public class OnlineActivity extends AppCompatActivity
     private ProgressBar progressBar;
     private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
     private FirebaseAuth firebaseAuth;
-    private FirebaseUser user;
+    private FirebaseUser firebaseUser;
     private DatabaseReference database;
-    private SharedPreferences sharedPreferences;
+    private FirebaseStorage firebaseStorage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +99,7 @@ public class OnlineActivity extends AppCompatActivity
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
 
-            // set the user sharedPreferences info when the drawer is opening
+            // set the firebaseUser sharedPreferences info when the drawer is opening
             @Override
             public void onDrawerStateChanged(int newState) {
                 if (newState == DrawerLayout.STATE_SETTLING) {
@@ -123,11 +128,12 @@ public class OnlineActivity extends AppCompatActivity
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
 
         firebaseAuth = FirebaseAuth.getInstance();
+        firebaseStorage = FirebaseStorage.getInstance(FIREBASE_STORAGE_REFERENCE);
 
         database = FirebaseDatabase.getInstance().getReference();
 
-        user = firebaseAuth.getCurrentUser();
-        sharedPreferences = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
+        firebaseUser = firebaseAuth.getCurrentUser();
+
         userProfile = new UserProfile();
     }
 
@@ -137,14 +143,14 @@ public class OnlineActivity extends AppCompatActivity
         Log.d("BB", "logout:success");
         firebaseAuth.signOut();
 
-        // remove the user from the online database
+        // remove the firebaseUser from the online database
         removeOnlineUser();
     }
 
     public void removeOnlineUser() {
-        Log.d("NNN", "remove online user: success");
+        Log.d("NNN", "remove online firebaseUser: success");
         database.child(Database.onlineUsers)
-                .child(user.getUid())
+                .child(firebaseUser.getUid())
                 .removeValue();
     }
 
@@ -157,7 +163,7 @@ public class OnlineActivity extends AppCompatActivity
     // view logic
 
     /**
-     * Fills the user information in the drawer panel
+     * Fills the firebaseUser information in the drawer panel
      *
      * @param drawerView the drawer panel
      */
@@ -172,7 +178,6 @@ public class OnlineActivity extends AppCompatActivity
         if (Network.isAvailable(connectivityManager)) {
             loadProfileOnline();
         } else {
-            loadProfileOffline();
             initProfileView(drawerView);
         }
 
@@ -247,16 +252,12 @@ public class OnlineActivity extends AppCompatActivity
      * Async task
      */
     private void loadProfileOnline() {
-        Log.d(Constant.NEARBY_CHAT, "Load sharedPreferences offline and add listener for id " + user.getUid());
-        database.child(Database.userProfiles).child(user.getUid()).addListenerForSingleValueEvent(userProfileListener);
+        Log.d(Constant.NEARBY_CHAT, "Load profile online and add listener for id " + firebaseUser.getUid());
+        database.child(Database.userProfiles).child(firebaseUser.getUid()).addListenerForSingleValueEvent(userProfileListener);
+        loadProfileImage();
+
     }
 
-    private void loadProfileOffline() {
-        //load offline information
-        userProfile.setUserName(sharedPreferences.getString(ProfileActivity.USER_NAME_KEY, "User name (default)"));
-        userProfile.setBio(sharedPreferences.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)"));
-        //picturePath = sharedPreferences.getString(ProfileActivity.USER_AVATAR_KEY, "");
-    }
 
     private void initProfileView(View drawerView) {
 
@@ -266,10 +267,29 @@ public class OnlineActivity extends AppCompatActivity
 
         drawerUserNameView.setText(userProfile.getUserName());
         drawerUserBioView.setText(userProfile.getBio());
-
-        String picturePath = "";
-        if (!picturePath.isEmpty()) {
-            drawerUserAvatarView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+        if (userProfile.getAvatar() != null) {
+            drawerUserAvatarView.setImageBitmap(userProfile.getAvatar());
         }
+    }
+
+    @NonNull
+    private StorageReference getStorageReference() {
+        return firebaseStorage.getReference("profile/" + firebaseUser.getUid() + ".jpeg");
+    }
+
+    private void loadProfileImage() {
+        ImageView drawerUserAvatarView = (ImageView) drawer.findViewById(R.id.drawer_user_avatar);
+        StorageReference reference = getStorageReference();
+
+        final long ONE_MEGABYTE = 1024 * 1024;
+        reference.getBytes(ONE_MEGABYTE).addOnSuccessListener(bytes -> {
+            // Data for "profile" is returns, use this as needed
+            Bitmap avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            userProfile.setAvatar(avatar);
+            drawerUserAvatarView.setImageBitmap(avatar);
+        }).addOnFailureListener(exception -> {
+            // Handle any errors
+            Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
+        });
     }
 }

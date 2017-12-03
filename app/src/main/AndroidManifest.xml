@@ -4,6 +4,8 @@
 
     <!-- permision for selecting a user image -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <!-- GPS -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <!-- To access Google+ APIs: -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -37,8 +39,8 @@
             android:label="@string/title_activity_online"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:label="@string/title_activity_chat"
-            android:name=".activities.ChatActivity">
+            android:name=".activities.ChatActivity"
+            android:label="@string/title_activity_chat">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.OnlineActivity" />

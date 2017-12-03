@@ -2,6 +2,7 @@ package pro.postaru.sandu.nearbychat.models;
 
 import android.graphics.Bitmap;
 
+import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.io.Serializable;
@@ -12,6 +13,7 @@ public class UserProfile implements Serializable {
     private String id;
     private String userName;
     private String bio;
+    @Exclude
     private Bitmap avatar;
 
     // required empty constructor for firebase loading
@@ -57,10 +59,12 @@ public class UserProfile implements Serializable {
         this.bio = bio;
     }
 
+    @Exclude
     public Bitmap getAvatar() {
         return avatar;
     }
 
+    @Exclude
     public void setAvatar(Bitmap avatar) {
         this.avatar = avatar;
     }

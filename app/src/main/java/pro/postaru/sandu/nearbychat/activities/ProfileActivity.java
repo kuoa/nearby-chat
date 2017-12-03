@@ -4,15 +4,16 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -33,6 +34,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.constants.Constant;
@@ -41,18 +47,15 @@ import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DataValidator;
 import pro.postaru.sandu.nearbychat.utils.Network;
 
+import static pro.postaru.sandu.nearbychat.constants.Constant.FIREBASE_STORAGE_REFERENCE;
+
 public class ProfileActivity extends AppCompatActivity {
 
-    public static final String USER_INFO_PREFS = "pro.postaru.sandu.nearbychat.USER_INFO_PREFS";
-    public static final String USER_NAME_KEY = "pro.postaru.sandu.nearbychat.USER_NAME";
-    public static final String USER_BIO_KEY = "pro.postaru.sandu.nearbychat.BIO";
-    public static final String USER_AVATAR_KEY = "pro.postaru.sandu.nearbychat.AVATAR";
+
 
     private static final int RESULT_LOAD_IMAGE = 1;
-
     private static final String[] READ_STORAGE_PERMISSION =
             {Manifest.permission.READ_EXTERNAL_STORAGE};
-
     private final Activity activity = this;
 
     private AutoCompleteTextView userNameView;
@@ -61,10 +64,9 @@ public class ProfileActivity extends AppCompatActivity {
     private ImageView profileImage;
     private ProgressBar progressBar;
 
-    private SharedPreferences profile;
 
     private String picturePath = "";
-
+    private FirebaseStorage firebaseStorage;
     private DatabaseReference database;
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
@@ -79,7 +81,6 @@ public class ProfileActivity extends AppCompatActivity {
             if (userProfileLocal != null) {
                 userProfile = userProfileLocal;
                 Log.w(Constant.NEARBY_CHAT, "Online profile loaded for id " + ProfileActivity.this.userProfile.getId());
-                saveProfileOffline();
                 initProfileView();
             } else {
                 Log.w(Constant.NEARBY_CHAT, "Error while loading the online profile");
@@ -103,9 +104,9 @@ public class ProfileActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseUser = firebaseAuth.getCurrentUser();
         database = FirebaseDatabase.getInstance().getReference();
+        firebaseStorage = FirebaseStorage.getInstance(FIREBASE_STORAGE_REFERENCE);
 
         userProfile = new UserProfile();
-        profile = getSharedPreferences(ProfileActivity.USER_INFO_PREFS, 0);
 
         userNameView = (AutoCompleteTextView) findViewById(R.id.username);
         userNameView.requestFocus();
@@ -120,15 +121,20 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
         profileImage = (ImageView) findViewById(R.id.profile_image);
-        profileImage.setOnClickListener(v -> {
+        profileImage.setDrawingCacheEnabled(true);
+        profileImage.buildDrawingCache();
 
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1) {
+        profileImage.setOnClickListener(v -> {
+            Log.d(Constant.NEARBY_CHAT, "profileImage setOnClickListener: ");
+            boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
+            if (isAndroidVersionNew) {
                 if (!hasReadPermission()) {
                     ActivityCompat.requestPermissions(activity, READ_STORAGE_PERMISSION
                             , 1);
-                } else {
-                    pickProfileImage();
                 }
+            }
+            if (!isAndroidVersionNew || hasReadPermission()) {
+                pickProfileImage();
             }
         });
 
@@ -143,7 +149,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case 1: {
@@ -163,6 +169,7 @@ public class ProfileActivity extends AppCompatActivity {
      * Sets a new profile picture for the user
      */
     private void pickProfileImage() {
+        Log.d(Constant.NEARBY_CHAT, "pickProfileImage: ");
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, RESULT_LOAD_IMAGE);
     }
@@ -201,8 +208,6 @@ public class ProfileActivity extends AppCompatActivity {
             //load online information
             loadProfileOnline();
         } else {
-            loadProfileOffline();
-
             initProfileView();
         }
 
@@ -213,9 +218,8 @@ public class ProfileActivity extends AppCompatActivity {
     private void initProfileView() {
         userNameView.setText(userProfile.getUserName());
         userBioView.setText(userProfile.getBio());
-
-        if (!picturePath.isEmpty()) {
-            profileImage.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+        if (userProfile.getAvatar() != null) {
+            profileImage.setImageBitmap(userProfile.getAvatar());
         }
     }
 
@@ -255,7 +259,9 @@ public class ProfileActivity extends AppCompatActivity {
             userProfile.setUserName(userName);
             userProfile.setBio(userBio);
             //for the moment we don't store the bitmap
-            //userProfile.setAvatar(profileImage.getDrawingCache());
+            profileImage.setDrawingCacheEnabled(true);
+            profileImage.buildDrawingCache();
+            userProfile.setAvatar(profileImage.getDrawingCache());
 
             ConnectivityManager connectivityManager
                     = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -263,25 +269,12 @@ public class ProfileActivity extends AppCompatActivity {
             if (Network.isAvailable(connectivityManager)) {
                 saveProfileOnline();
             }
-            saveProfileOffline();
         }
 
         progressBar.setVisibility(View.GONE);
 
     }
 
-    /**
-     * Save on the device the current userProfile of the current firebaseUser online
-     */
-    private void saveProfileOffline() {
-        Log.d(Constant.NEARBY_CHAT, "Save profile offline id " + firebaseUser.getUid());
-        SharedPreferences.Editor editor = profile.edit();
-        editor.putString(ProfileActivity.USER_NAME_KEY, userProfile.getUserName());
-        editor.putString(ProfileActivity.USER_BIO_KEY, userProfile.getBio());
-        editor.putString(ProfileActivity.USER_AVATAR_KEY, picturePath);
-
-        editor.apply();
-    }
 
     /**
      * Save the current userProfile of the current firebaseUser online
@@ -289,6 +282,26 @@ public class ProfileActivity extends AppCompatActivity {
     private void saveProfileOnline() {
         Log.d(Constant.NEARBY_CHAT, "Save profile online for id  " + firebaseUser.getUid());
         database.child(Database.userProfiles).child(firebaseUser.getUid()).setValue(userProfile);
+        StorageReference reference = getStorageReference();
+        profileImage.setDrawingCacheEnabled(true);
+        profileImage.buildDrawingCache();
+
+        Bitmap bitmap = profileImage.getDrawingCache();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+        byte[] data = byteArrayOutputStream.toByteArray();
+
+        UploadTask uploadTask = reference.putBytes(data);
+        uploadTask.addOnFailureListener(exception -> {
+            // Handle unsuccessful uploads
+            Log.w(Constant.NEARBY_CHAT, "saveProfileOnline: ", exception);
+        }).addOnSuccessListener(taskSnapshot -> {
+            Log.d(Constant.NEARBY_CHAT, "saveProfileOnline profile image: Medatada= " + taskSnapshot.getMetadata());
+
+            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+            Uri downloadUrl = taskSnapshot.getDownloadUrl();
+            Log.d(Constant.NEARBY_CHAT, "saveProfileOnline profile image: uri= " + downloadUrl);
+        });
     }
 
     /**
@@ -296,16 +309,31 @@ public class ProfileActivity extends AppCompatActivity {
      * Async task
      */
     private void loadProfileOnline() {
-        Log.d(Constant.NEARBY_CHAT, "Load profile offline and add listener for id " + firebaseUser.getUid());
+        Log.d(Constant.NEARBY_CHAT, "Load profile online and add listener for id " + firebaseUser.getUid());
         database.child(Database.userProfiles).child(firebaseUser.getUid()).addListenerForSingleValueEvent(userProfileListener);
+        loadProfileImage();
     }
 
-    private void loadProfileOffline() {
-        //load offline information
-        userProfile.setUserName(profile.getString(ProfileActivity.USER_NAME_KEY, "User name (default)"));
-        userProfile.setBio(profile.getString(ProfileActivity.USER_BIO_KEY, "User bio (default)"));
-        picturePath = profile.getString(ProfileActivity.USER_AVATAR_KEY, "");
+    private void loadProfileImage() {
+        StorageReference reference = getStorageReference();
+
+        final long ONE_MEGABYTE = 1024 * 1024;
+        reference.getBytes(ONE_MEGABYTE).addOnSuccessListener(bytes -> {
+            // Data for "profile" is returns, use this as needed
+            Bitmap avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            userProfile.setAvatar(avatar);
+            profileImage.setImageBitmap(avatar);
+        }).addOnFailureListener(exception -> {
+            // Handle any errors
+            Log.w(Constant.NEARBY_CHAT, "loadProfileOnline: ", exception);
+        });
     }
+
+    @NonNull
+    private StorageReference getStorageReference() {
+        return firebaseStorage.getReference("profile/" + firebaseUser.getUid() + ".jpeg");
+    }
+
 
 }
 
