@@ -292,4 +292,10 @@ public class OnlineActivity extends AppCompatActivity
             Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
         });
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        database.child(Database.userProfiles).child(firebaseUser.getUid()).removeEventListener(userProfileListener);
+    }
 }

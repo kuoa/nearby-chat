@@ -52,7 +52,6 @@ import static pro.postaru.sandu.nearbychat.constants.Constant.FIREBASE_STORAGE_R
 public class ProfileActivity extends AppCompatActivity {
 
 
-
     private static final int RESULT_LOAD_IMAGE = 1;
     private static final String[] READ_STORAGE_PERMISSION =
             {Manifest.permission.READ_EXTERNAL_STORAGE};
@@ -334,6 +333,10 @@ public class ProfileActivity extends AppCompatActivity {
         return firebaseStorage.getReference("profile/" + firebaseUser.getUid() + ".jpeg");
     }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        database.child(Database.userProfiles).child(firebaseUser.getUid()).removeEventListener(userProfileListener);
+    }
 }
 
