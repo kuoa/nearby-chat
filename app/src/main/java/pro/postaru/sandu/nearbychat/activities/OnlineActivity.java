@@ -242,6 +242,8 @@ public class OnlineActivity extends AppCompatActivity
     @Override
     public void mountChatActivity(UserProfile userProfile) {
         Intent intent = new Intent(this, ChatActivity.class);
+        //todo undo this
+        userProfile.setAvatar(null);
         intent.putExtra(ChatActivity.PARTNER_USER_PROFILE, userProfile);
         startActivity(intent);
     }

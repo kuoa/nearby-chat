@@ -5,7 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import pro.postaru.sandu.nearbychat.fragments.ConversationsFragment;
-import pro.postaru.sandu.nearbychat.fragments.MapFragment;
+import pro.postaru.sandu.nearbychat.fragments.MapViewFragment;
 
 public class OnlineFragmentPagerAdapter extends FragmentPagerAdapter {
 
@@ -17,7 +17,7 @@ public class OnlineFragmentPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
 
         if (position == 0) {
-            return MapFragment.newInstance();
+            return MapViewFragment.newInstance();
         } else {
             return ConversationsFragment.newInstance();
         }

@@ -39,6 +39,7 @@ public class MapFragment extends Fragment {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
 
+
             UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
 
             mainProgresBar.setVisibility(View.GONE);

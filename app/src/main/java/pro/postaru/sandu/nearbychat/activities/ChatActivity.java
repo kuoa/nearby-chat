@@ -12,13 +12,9 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,9 +22,9 @@ import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.adapters.ChatAdapter;
-import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.models.Message;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
+import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -103,18 +99,13 @@ public class ChatActivity extends AppCompatActivity {
         }
     };
     private UserProfile conversationPartner;
-    private FirebaseAuth auth;
-    private FirebaseUser user;
-    private DatabaseReference database;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        auth = FirebaseAuth.getInstance();
-        database = FirebaseDatabase.getInstance().getReference();
-        user = auth.getCurrentUser();
 
         // spinner
 
@@ -133,9 +124,7 @@ public class ChatActivity extends AppCompatActivity {
 
         conversationId = getConversationId(conversationPartner.getId());
 
-        database.child(Database.userMessages)
-                .child(conversationId)
-                .child("messages")
+        DatabaseUtils.getMessagesByConversationId(conversationId)
                 .addChildEventListener(messageListener);
 
         chatAdapter = new ChatAdapter(this, R.layout.chat_entry, messages);
@@ -159,25 +148,21 @@ public class ChatActivity extends AppCompatActivity {
         Message newMessage = new Message();
         newMessage.setText(content);
         newMessage.setDate(new Date());
-        newMessage.setSenderId(user.getUid());
+        newMessage.setSenderId(DatabaseUtils.getCurrentUUID());
 
-        String id = database.child(Database.userMessages)
-                .child(conversationId)
-                .child("messages")
+        String id = DatabaseUtils.getMessagesByConversationId(conversationId)
                 .push()
                 .getKey();
 
         newMessage.setId(id);
 
-        database.child(Database.userMessages)
-                .child(conversationId)
-                .child("messages")
+        DatabaseUtils.getMessagesByConversationId(conversationId)
                 .child(id)
                 .setValue(newMessage);
     }
 
     private String getConversationId(String partnerId) {
-        String myId = user.getUid();
+        String myId = DatabaseUtils.getCurrentUUID();
 
         if (myId.compareTo(partnerId) < 0) {
             return myId + "-" + partnerId;
@@ -196,11 +181,7 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
-        database.child(Database.userMessages)
-                .child(conversationId)
-                .child("messages")
-                .removeEventListener(messageListener);
+        DatabaseUtils.getMessagesByConversationId(conversationId).removeEventListener(messageListener);
     }
 
 }

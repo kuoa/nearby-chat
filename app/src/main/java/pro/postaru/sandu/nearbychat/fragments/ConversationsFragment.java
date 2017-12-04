@@ -9,13 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -23,19 +19,15 @@ import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.adapters.ActiveConversationsAdapter;
-import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.models.Conversation;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
+import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
 public class ConversationsFragment extends Fragment {
 
-    private FirebaseUser user;
-    private DatabaseReference database;
 
     private List<UserProfile> conversationProfiles;
-
     private ActiveConversationsAdapter activeConversationsAdapter;
-
     private ListView conversationsView;
     private ProgressBar mainProgresBar;
     private final ValueEventListener getUserProfileListener = new ValueEventListener() {
@@ -48,6 +40,10 @@ public class ConversationsFragment extends Fragment {
 
             if (userProfile != null) {
                 activeConversationsAdapter.add(userProfile);
+                DatabaseUtils.loadProfileImage(userProfile.getId(), bitmap -> {
+                    userProfile.setAvatar(bitmap);
+                    activeConversationsAdapter.notifyDataSetChanged();
+                });
             }
 
             Log.w("BBB", "id " + userProfile.getId());
@@ -67,8 +63,7 @@ public class ConversationsFragment extends Fragment {
 
             if (conversation != null) {
 
-                database.child(Database.userProfiles)
-                        .child(conversation.getPartnerId())
+                DatabaseUtils.getUserProfileReferenceById(conversation.getPartnerId())
                         .addListenerForSingleValueEvent(getUserProfileListener);
             } else {
                 Log.w("BBB", "No conversations");
@@ -108,18 +103,12 @@ public class ConversationsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        database = FirebaseDatabase.getInstance().getReference();
 
         conversationProfiles = new ArrayList<>();
 
         mainProgresBar = (ProgressBar) getActivity().findViewById(R.id.online_spinner);
         mainProgresBar.setVisibility(View.VISIBLE);
-
-        database.child(Database.userConversations)
-                .child(user.getUid())
-                .child("conversations")
-                .addChildEventListener(userConversationsListener);
+        DatabaseUtils.getConversationsReferenceById(DatabaseUtils.getCurrentUUID()).addChildEventListener(userConversationsListener);
     }
 
     @Override
@@ -139,10 +128,7 @@ public class ConversationsFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        database.child(Database.userConversations)
-                .child(user.getUid())
-                .child("conversations")
+        DatabaseUtils.getConversationsReferenceById(DatabaseUtils.getCurrentUUID())
                 .removeEventListener(userConversationsListener);
     }
 }
