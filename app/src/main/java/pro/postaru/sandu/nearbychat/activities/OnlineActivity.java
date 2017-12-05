@@ -1,7 +1,9 @@
 package pro.postaru.sandu.nearbychat.activities;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
@@ -24,6 +27,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -41,28 +48,23 @@ import pro.postaru.sandu.nearbychat.adapters.OnlineFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.adapters.OnlineUsersAdapter;
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
+import pro.postaru.sandu.nearbychat.fragments.MapViewFragment;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
+import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 import pro.postaru.sandu.nearbychat.utils.Network;
 
 import static pro.postaru.sandu.nearbychat.constants.Constant.FIREBASE_STORAGE_REFERENCE;
+import static pro.postaru.sandu.nearbychat.constants.Constant.LOCATION_SERVICES;
 
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnlineUsersAdapter.OnAdapterInteractionListener,
-        ActiveConversationsAdapter.OnAdapterInteractionListener {
+        ActiveConversationsAdapter.OnAdapterInteractionListener, MapViewFragment.OnFragmentInteractionListener {
 
     private UserProfile userProfile;
 
     private ViewPager viewPager;
     private DrawerLayout drawer;
-
-    private ProgressBar progressBar;
-    private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser firebaseUser;
-    private DatabaseReference database;
-    private FirebaseStorage firebaseStorage;
-
     private final ValueEventListener userProfileListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -84,7 +86,14 @@ public class OnlineActivity extends AppCompatActivity
             Log.w(Constant.NEARBY_CHAT, "Error database");
         }
     };
-
+    private ProgressBar progressBar;
+    private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference database;
+    private FirebaseStorage firebaseStorage;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationRequest mLocationRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,12 +146,21 @@ public class OnlineActivity extends AppCompatActivity
         firebaseUser = firebaseAuth.getCurrentUser();
 
         userProfile = new UserProfile();
+
+        createLocationRequest();
+        initLocation();
+
     }
 
     // activity logic
 
     public void requestLogout() {
         Log.d("BB", "logout:success");
+        //remove last location from geofire
+
+        DatabaseUtils.getNewLocationDatabase().removeLocation(userProfile.getId());
+
+
         firebaseAuth.signOut();
 
         // remove the firebaseUser from the online database
@@ -301,5 +319,45 @@ public class OnlineActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
         database.child(Database.userProfiles).child(firebaseUser.getUid()).removeEventListener(userProfileListener);
+    }
+
+    @Override
+    public void addLocationCallback(LocationCallback locationCallback) {
+        Log.d(LOCATION_SERVICES, "addLocationCallback: ");
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        if (true) {
+            fusedLocationProviderClient.requestLocationUpdates(mLocationRequest, locationCallback, null/*looper*/);
+        } else {
+            //need location
+        }
+
+    }
+
+    @Override
+    public void removeLocationCallback(LocationCallback locationCallback) {
+        Log.d(LOCATION_SERVICES, "removeLocationCallback: ");
+        fusedLocationProviderClient.removeLocationUpdates(locationCallback);
+
+    }
+
+    public void initLocation() {
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+
+
+    }
+
+    private void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setInterval(2000);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
     }
 }

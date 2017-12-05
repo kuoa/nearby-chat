@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity
 
     private MainFragmentPagerAdapter mainFragmentPagerAdapter;
 
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity
 
         auth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance().getReference();
+
     }
 
     @Override

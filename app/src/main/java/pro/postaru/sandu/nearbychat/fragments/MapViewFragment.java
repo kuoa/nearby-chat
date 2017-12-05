@@ -1,8 +1,10 @@
 package pro.postaru.sandu.nearbychat.fragments;
 
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,6 +18,8 @@ import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
 import com.firebase.geofire.GeoQuery;
 import com.firebase.geofire.GeoQueryEventListener;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -40,16 +44,17 @@ import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
+import static pro.postaru.sandu.nearbychat.constants.Constant.LOCATION_SERVICES;
+
 public class MapViewFragment extends Fragment {
+    public static final double RADIUS = 0.150;
+    private final int imageSize = 120;
     private Map<String, Marker> stringMarkerMap;
     private MapView mMapView;
     private GoogleMap googleMap;
     private GeoFire geoFire;
     private String userId;
     private Circle circle;
-
-    private final int imageSize = 120;
-
     private final GeoQueryEventListener geoQueryEventListener = new GeoQueryEventListener() {
         @Override
         public void onKeyEntered(String key, GeoLocation location) {
@@ -99,7 +104,7 @@ public class MapViewFragment extends Fragment {
             Marker marker = stringMarkerMap.get(key);
             LatLng position = new LatLng(location.latitude, location.longitude);
             updateMarkerPosition(marker, position);
-            updateCircle(position, key);
+            drawCenteredCircle(position, key);
 
 
         }
@@ -111,7 +116,26 @@ public class MapViewFragment extends Fragment {
 
         @Override
         public void onGeoQueryError(DatabaseError error) {
-            System.err.println("There was an error with this query: " + error);
+            Log.w(Constant.NEARBY_CHAT, "onGeoQueryError: There was an error with this query: ", error.toException());
+        }
+    };
+    private OnFragmentInteractionListener activity;
+    private GeoQuery geoQuery;
+    private final LocationCallback locationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            for (Location location : locationResult.getLocations()) {
+                Log.d(LOCATION_SERVICES, "onLocationResult() called with: locationResult = [" + locationResult + "]" + location.getProvider() + " " + location.getAccuracy());
+
+                GeoLocation myLocation = new GeoLocation(location.getLatitude(), location.getLongitude());
+                geoFire.setLocation(userId, myLocation);
+
+                updateQuery(myLocation);
+
+                drawCenteredCircle(new LatLng(location.getLatitude(), location.getLongitude()), userId);
+
+            }
         }
     };
 
@@ -122,6 +146,17 @@ public class MapViewFragment extends Fragment {
         MapViewFragment fragment = new MapViewFragment();
         fragment.setArguments(args);
         return fragment;
+    }
+
+    ;
+
+    private void updateQuery(GeoLocation myLocation) {
+        if (geoQuery == null) {
+            geoQuery = geoFire.queryAtLocation(myLocation, RADIUS);
+            geoQuery.addGeoQueryEventListener(geoQueryEventListener);
+        } else {
+            geoQuery.setLocation(myLocation, RADIUS);
+        }
     }
 
     private void updateCameraPosition(LatLng position) {
@@ -141,7 +176,6 @@ public class MapViewFragment extends Fragment {
     private void updateCircle(LatLng center, String key) {
         if (userId.equals(key)) {
             circle.setCenter(center);
-            updateCameraPosition(center);
         }
     }
 
@@ -153,13 +187,8 @@ public class MapViewFragment extends Fragment {
 
         geoFire = DatabaseUtils.getNewLocationDatabase();
         userId = DatabaseUtils.getCurrentUUID();
-        GeoLocation myLocation = new GeoLocation(48.846303, 2.355116);
-        geoFire.setLocation(userId, myLocation);
+        activity.addLocationCallback(locationCallback);
 
-        GeoQuery geoQuery = geoFire.queryAtLocation(myLocation, 0.150);
-
-        geoQuery.addGeoQueryEventListener(geoQueryEventListener);
-        //TODO remove when moving
     }
 
     @Override
@@ -188,8 +217,6 @@ public class MapViewFragment extends Fragment {
 
     @NonNull
     private Marker addMarker(LatLng latLng, UserProfile userProfile) {
-
-
         //Create maker options
         MarkerOptions markerOptions = new MarkerOptions()
                 .position(latLng)
@@ -207,13 +234,17 @@ public class MapViewFragment extends Fragment {
 
     private void drawCenteredCircle(LatLng latLng, String key) {
         if (userId.equals(key)) {
-            circle = googleMap.addCircle(new CircleOptions()
-                    .center(latLng)
-                    .radius(150)
-                    .strokeColor(Color.CYAN)
-                    .fillColor(0x220000FF)
-                    .strokeWidth(5));
-            updateCameraPosition(latLng);
+            if (circle != null) {
+                updateCircle(latLng, key);
+            } else {
+                circle = googleMap.addCircle(new CircleOptions()
+                        .center(latLng)
+                        .radius(150)
+                        .strokeColor(Color.CYAN)
+                        .fillColor(0x220000FF)
+                        .strokeWidth(5));
+                updateCameraPosition(latLng);
+            }
         }
     }
 
@@ -242,6 +273,33 @@ public class MapViewFragment extends Fragment {
         mMapView.onLowMemory();
     }
 
-    //TODO add interface when we want to add listener  for the main activity
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof MapViewFragment.OnFragmentInteractionListener) {
+            activity = (MapViewFragment.OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
 
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        clearGeoQuery();
+        activity.removeLocationCallback(locationCallback);
+        activity = null;
+    }
+
+    private void clearGeoQuery() {
+        geoQuery.removeAllListeners();
+        geoQuery = null;
+    }
+
+    public interface OnFragmentInteractionListener {
+        void addLocationCallback(LocationCallback locationCallback);
+
+        void removeLocationCallback(LocationCallback locationCallback);
+    }
 }
