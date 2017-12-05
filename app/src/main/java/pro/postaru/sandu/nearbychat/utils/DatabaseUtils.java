@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
+import pro.postaru.sandu.nearbychat.interfaces.OnBitmapLoadedListener;
 
 import static pro.postaru.sandu.nearbychat.constants.Constant.FIREBASE_STORAGE_REFERENCE;
 import static pro.postaru.sandu.nearbychat.constants.Database.userLocation;
@@ -114,4 +115,5 @@ public class DatabaseUtils {
     public static DatabaseReference getMessagesByConversationId(String conversationId) {
         return getCurrentDatabaseReference().child(Database.userMessages).child(conversationId).child("messages");
     }
+
 }

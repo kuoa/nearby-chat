@@ -63,7 +63,6 @@
                     android:layout_alignRight="@id/profile_image"
                     android:layout_centerInParent="true"
                     android:tint="@color/colorAccent"
-                    android:visibility="invisible"
                     app:srcCompat="@drawable/ic_add_a_photo_black" />
 
             </RelativeLayout>

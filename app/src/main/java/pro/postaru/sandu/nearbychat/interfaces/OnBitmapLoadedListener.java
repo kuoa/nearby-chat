@@ -1,4 +1,4 @@
-package pro.postaru.sandu.nearbychat.utils;
+package pro.postaru.sandu.nearbychat.interfaces;
 
 import android.graphics.Bitmap;
 
