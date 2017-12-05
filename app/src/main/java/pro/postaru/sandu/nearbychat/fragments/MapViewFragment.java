@@ -1,8 +1,8 @@
 package pro.postaru.sandu.nearbychat.fragments;
 
 
-import android.content.Context;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
@@ -43,7 +43,6 @@ import java.util.Map;
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.models.Conversation;
-import pro.postaru.sandu.nearbychat.models.UserConversations;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
@@ -52,17 +51,44 @@ import static pro.postaru.sandu.nearbychat.constants.Constant.LOCATION_SERVICES;
 public class MapViewFragment extends Fragment {
     public static final double RADIUS = 0.150;
     private final int imageSize = 120;
+    private final GoogleMap.OnMarkerClickListener markerClickListener = marker -> {
+
+        String partnerId = (String) marker.getTag();
+        String ownerId = DatabaseUtils.getCurrentUUID();
+
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext());
+        alertBuilder.setTitle("New conversation");
+
+        alertBuilder.setMessage("Create a new conversation?")
+                .setPositiveButton("Yes", (dialogInterface, i) -> {
+
+                    Conversation ownerConversation = createConversation(ownerId, partnerId);
+                    DatabaseUtils.getConversationsReferenceById(ownerId)
+                            .child(partnerId)
+                            .setValue(ownerConversation);
+
+                    Conversation partnerConversation = createConversation(partnerId, ownerId);
+                    DatabaseUtils.getConversationsReferenceById(partnerId)
+                            .child(ownerId)
+                            .setValue(partnerConversation);
+                })
+
+                .setNegativeButton("No", (dialogInterface, i) -> {
+                    dialogInterface.cancel();
+                });
+
+        AlertDialog alertDialog = alertBuilder.create();
+        alertDialog.show();
+
+
+        return false;
+    };
     private Map<String, Marker> stringMarkerMap;
     private MapView mMapView;
     private GoogleMap googleMap;
     private GeoFire geoFire;
     private String userId;
     private Circle circle;
-
-    private final int imageSize = 120;
-
-    private UserConversations userConversations;
-
     private final GeoQueryEventListener geoQueryEventListener = new GeoQueryEventListener() {
 
         @Override
@@ -146,39 +172,6 @@ public class MapViewFragment extends Fragment {
 
             }
         }
-    };
-
-    private final GoogleMap.OnMarkerClickListener markerClickListener = marker -> {
-
-        String partnerId = (String) marker.getTag();
-        String ownerId = DatabaseUtils.getCurrentUUID();
-
-        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext());
-        alertBuilder.setTitle("New conversation");
-
-        alertBuilder.setMessage("Create a new conversation?")
-                .setPositiveButton("Yes", (dialogInterface, i) -> {
-
-                    Conversation ownerConversation = createConversation(ownerId, partnerId);
-                    DatabaseUtils.getConversationsReferenceById(ownerId)
-                            .child(partnerId)
-                            .setValue(ownerConversation);
-
-                    Conversation partnerConversation = createConversation(partnerId, ownerId);
-                    DatabaseUtils.getConversationsReferenceById(partnerId)
-                            .child(ownerId)
-                            .setValue(partnerConversation);
-                })
-
-                .setNegativeButton("No", (dialogInterface, i) -> {
-                    dialogInterface.cancel();
-                });
-
-        AlertDialog alertDialog = alertBuilder.create();
-        alertDialog.show();
-
-
-        return false;
     };
 
     public static MapViewFragment newInstance() {
