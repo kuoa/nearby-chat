@@ -55,6 +55,14 @@ public class OnlineActivity extends AppCompatActivity
 
     private ViewPager viewPager;
     private DrawerLayout drawer;
+
+    private ProgressBar progressBar;
+    private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser firebaseUser;
+    private DatabaseReference database;
+    private FirebaseStorage firebaseStorage;
+
     private final ValueEventListener userProfileListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -76,12 +84,6 @@ public class OnlineActivity extends AppCompatActivity
             Log.w(Constant.NEARBY_CHAT, "Error database");
         }
     };
-    private ProgressBar progressBar;
-    private OnlineFragmentPagerAdapter onlineFragmentPagerAdapter;
-    private FirebaseAuth firebaseAuth;
-    private FirebaseUser firebaseUser;
-    private DatabaseReference database;
-    private FirebaseStorage firebaseStorage;
 
 
     @Override

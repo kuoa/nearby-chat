@@ -1,6 +1,7 @@
 package pro.postaru.sandu.nearbychat.fragments;
 
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -46,6 +47,9 @@ public class MapViewFragment extends Fragment {
     private GeoFire geoFire;
     private String userId;
     private Circle circle;
+
+    private final int imageSize = 120;
+
     private final GeoQueryEventListener geoQueryEventListener = new GeoQueryEventListener() {
         @Override
         public void onKeyEntered(String key, GeoLocation location) {
@@ -75,8 +79,12 @@ public class MapViewFragment extends Fragment {
                 }
             });
 
-            DatabaseUtils.loadProfileImage(key, bitmap -> marker.setIcon(BitmapDescriptorFactory.fromBitmap(bitmap)));
+            DatabaseUtils.loadProfileImage(key, bitmap -> {
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, imageSize, imageSize, false);
+                marker.setIcon(BitmapDescriptorFactory.fromBitmap(resizedBitmap));
+            });
         }
+
 
         @Override
         public void onKeyExited(String key) {
