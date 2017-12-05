@@ -106,7 +106,9 @@ public class ProfileActivity extends AppCompatActivity {
         profileImage.setDrawingCacheEnabled(true);
         profileImage.buildDrawingCache();
 
-        profileImage.setOnClickListener(v -> {
+        profileImageIcon = (ImageView) findViewById(R.id.profile_image_icon);
+
+        profileImageIcon.setOnClickListener(v -> {
             Log.d(Constant.NEARBY_CHAT, "profileImage setOnClickListener: ");
             boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
             if (isAndroidVersionNew) {
@@ -119,8 +121,6 @@ public class ProfileActivity extends AppCompatActivity {
                 pickProfileImage();
             }
         });
-
-        profileImageIcon = (ImageView) findViewById(R.id.profile_image_icon);
 
 
         loadProfileData();
@@ -179,6 +179,9 @@ public class ProfileActivity extends AppCompatActivity {
             }
 
             profileImage.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+            imageProgressBar.setVisibility(View.GONE);
+            profileImage.setVisibility(View.VISIBLE);
+
         }
     }
 
@@ -283,6 +286,7 @@ public class ProfileActivity extends AppCompatActivity {
 
 
         userProfileDatabaseReference.addListenerForSingleValueEvent(userProfileListener);
+
         DatabaseUtils.loadProfileImage(userId, bitmap -> {
             userProfile.setAvatar(bitmap);
             profileImage.setImageBitmap(bitmap);

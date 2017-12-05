@@ -16,12 +16,16 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
+
 import pro.postaru.sandu.nearbychat.activities.OnlineActivity;
 import pro.postaru.sandu.nearbychat.adapters.MainFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.fragments.LoginFragment;
 import pro.postaru.sandu.nearbychat.fragments.RegisterFragment;
 import pro.postaru.sandu.nearbychat.models.OnlineUser;
+import pro.postaru.sandu.nearbychat.models.UserConversations;
+import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
 
 public class MainActivity extends AppCompatActivity
@@ -119,6 +123,7 @@ public class MainActivity extends AppCompatActivity
                         user = auth.getCurrentUser();
                         Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
 
+                        createUserConversationEntry();
                         registerOnlineUser();
                         mountOnlineActivity();
 
@@ -144,6 +149,24 @@ public class MainActivity extends AppCompatActivity
     public void mountOnlineActivity() {
         Intent intent = new Intent(this, OnlineActivity.class);
         startActivity(intent);
+    }
+
+    private void createUserConversationEntry() {
+
+        String key = database
+                .child(Database.userConversations)
+                .push()
+                .getKey();
+
+        UserConversations userConversations = new UserConversations();
+        userConversations.setOwnerId(DatabaseUtils.getCurrentUUID());
+        userConversations.setId(key);
+        userConversations.setConversations(new HashMap<>());
+
+        DatabaseUtils.getCurrentDatabaseReference()
+                .child(Database.userConversations)
+                .child(user.getUid())
+                .setValue(userConversations);
     }
 
 }

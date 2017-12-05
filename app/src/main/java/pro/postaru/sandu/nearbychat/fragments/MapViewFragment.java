@@ -2,6 +2,7 @@ package pro.postaru.sandu.nearbychat.fragments;
 
 
 import android.content.Context;
+import android.app.AlertDialog;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
@@ -41,6 +42,8 @@ import java.util.Map;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.constants.Constant;
+import pro.postaru.sandu.nearbychat.models.Conversation;
+import pro.postaru.sandu.nearbychat.models.UserConversations;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
@@ -55,7 +58,13 @@ public class MapViewFragment extends Fragment {
     private GeoFire geoFire;
     private String userId;
     private Circle circle;
+
+    private final int imageSize = 120;
+
+    private UserConversations userConversations;
+
     private final GeoQueryEventListener geoQueryEventListener = new GeoQueryEventListener() {
+
         @Override
         public void onKeyEntered(String key, GeoLocation location) {
             Log.d(Constant.NEARBY_CHAT, String.format("Key %s entered the search area at [%f,%f]", key, location.latitude, location.longitude));
@@ -139,6 +148,39 @@ public class MapViewFragment extends Fragment {
         }
     };
 
+    private final GoogleMap.OnMarkerClickListener markerClickListener = marker -> {
+
+        String partnerId = (String) marker.getTag();
+        String ownerId = DatabaseUtils.getCurrentUUID();
+
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(getContext());
+        alertBuilder.setTitle("New conversation");
+
+        alertBuilder.setMessage("Create a new conversation?")
+                .setPositiveButton("Yes", (dialogInterface, i) -> {
+
+                    Conversation ownerConversation = createConversation(ownerId, partnerId);
+                    DatabaseUtils.getConversationsReferenceById(ownerId)
+                            .child(partnerId)
+                            .setValue(ownerConversation);
+
+                    Conversation partnerConversation = createConversation(partnerId, ownerId);
+                    DatabaseUtils.getConversationsReferenceById(partnerId)
+                            .child(ownerId)
+                            .setValue(partnerConversation);
+                })
+
+                .setNegativeButton("No", (dialogInterface, i) -> {
+                    dialogInterface.cancel();
+                });
+
+        AlertDialog alertDialog = alertBuilder.create();
+        alertDialog.show();
+
+
+        return false;
+    };
+
     public static MapViewFragment newInstance() {
 
         Bundle args = new Bundle();
@@ -157,6 +199,21 @@ public class MapViewFragment extends Fragment {
         } else {
             geoQuery.setLocation(myLocation, RADIUS);
         }
+    }
+
+
+    private Conversation createConversation(String ownerId, String partnerId) {
+
+        String key = DatabaseUtils.getConversationsReferenceById(ownerId)
+                .push()
+                .getKey();
+
+        Conversation conversation = new Conversation();
+        conversation.setId(key);
+        conversation.setOwnerId(ownerId);
+        conversation.setPartnerId(partnerId);
+
+        return conversation;
     }
 
     private void updateCameraPosition(LatLng position) {
@@ -201,12 +258,7 @@ public class MapViewFragment extends Fragment {
         mMapView.getMapAsync(mMap -> {
 
             googleMap = mMap;
-            googleMap.setOnMarkerClickListener(marker -> {
-                Log.d(Constant.NEARBY_CHAT, "onMarkerClick: " + marker.getTitle());
-
-                //Add  function from the interface
-                return false;
-            });
+            googleMap.setOnMarkerClickListener(markerClickListener);
 
 
         });
@@ -224,7 +276,12 @@ public class MapViewFragment extends Fragment {
                 .snippet(userProfile.getBio());
 
         Marker marker = googleMap.addMarker(markerOptions);
+
+        // save the user id for future use
+        marker.setTag(userProfile.getId());
+
         marker.showInfoWindow();//show the windows
+
 
         drawCenteredCircle(latLng, userProfile.getId());
         //Save the reference in the map

@@ -30,6 +30,7 @@ public class ConversationsFragment extends Fragment {
     private ActiveConversationsAdapter activeConversationsAdapter;
     private ListView conversationsView;
     private ProgressBar mainProgresBar;
+
     private final ValueEventListener getUserProfileListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -44,9 +45,8 @@ public class ConversationsFragment extends Fragment {
                     userProfile.setAvatar(bitmap);
                     activeConversationsAdapter.notifyDataSetChanged();
                 });
+                Log.w("BBB", "id " + userProfile.getId());
             }
-
-            Log.w("BBB", "id " + userProfile.getId());
         }
 
         @Override
