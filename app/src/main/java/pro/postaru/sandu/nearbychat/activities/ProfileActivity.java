@@ -48,6 +48,8 @@ public class ProfileActivity extends AppCompatActivity {
     private EditText userBioView;
     private Button updateProfileButton;
     private ImageView profileImage;
+    private ImageView profileImageIcon;
+    private ProgressBar imageProgressBar;
     private ProgressBar progressBar;
     private UserProfile userProfile;
 
@@ -92,6 +94,7 @@ public class ProfileActivity extends AppCompatActivity {
         userBioView = (EditText) findViewById(R.id.bio);
 
         progressBar = (ProgressBar) findViewById(R.id.profile_spinner);
+        imageProgressBar = (ProgressBar) findViewById(R.id.image_spinner);
 
         updateProfileButton = (Button) findViewById(R.id.update_profile_button);
         updateProfileButton.setOnClickListener(v -> {
@@ -116,6 +119,8 @@ public class ProfileActivity extends AppCompatActivity {
                 pickProfileImage();
             }
         });
+
+        profileImageIcon = (ImageView) findViewById(R.id.profile_image_icon);
 
 
         loadProfileData();
@@ -281,6 +286,9 @@ public class ProfileActivity extends AppCompatActivity {
         DatabaseUtils.loadProfileImage(userId, bitmap -> {
             userProfile.setAvatar(bitmap);
             profileImage.setImageBitmap(bitmap);
+
+            profileImage.setVisibility(View.VISIBLE);
+            profileImageIcon.setVisibility(View.VISIBLE);
         });
     }
 

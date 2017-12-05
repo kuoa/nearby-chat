@@ -38,21 +38,32 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center">
 
+                <ProgressBar
+                    android:id="@+id/image_spinner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:visibility="visible" />
+
                 <ImageView
                     android:id="@+id/profile_image"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:layout_centerHorizontal="true"
                     android:scaleType="centerCrop"
+                    android:visibility="invisible"
                     app:srcCompat="@android:drawable/sym_def_app_icon"/>
 
                 <ImageView
+                    android:id="@+id/profile_image_icon"
                     android:layout_width="25dp"
                     android:layout_height="25dp"
                     android:layout_alignBottom="@id/profile_image"
                     android:layout_alignRight="@id/profile_image"
                     android:layout_centerInParent="true"
                     android:tint="@color/colorAccent"
+                    android:visibility="invisible"
                     app:srcCompat="@drawable/ic_add_a_photo_black" />
 
             </RelativeLayout>
