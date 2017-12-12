@@ -2,6 +2,7 @@ package pro.postaru.sandu.nearbychat.utils;
 
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
@@ -111,29 +112,45 @@ public class DatabaseUtils {
     }
 
     public static void loadImage(StorageReference storageReference, OnSuccessListener<byte[]> onSuccessListener, OnFailureListener onFailureListener) {
-        try {
+        Bitmap bitmapFromMemCache = CacheUtils.getBitmapFromMemCache(storageReference.getPath());
+        if (bitmapFromMemCache != null) {
+            //cache work
+            Log.d(Constant.CACHE_UTILS, "loadImage: ok");
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmapFromMemCache.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            onSuccessListener.onSuccess(stream.toByteArray());
+        } else {
+            try {
 
-            final long ONE_MEGABYTE = 1024 * 1024;
+                final long ONE_MEGABYTE = 1024 * 1024;
 
-            Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE);//async storage exception when the image doesn't exist
+                Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE);//async storage exception when the image doesn't exist
 
-            if (onSuccessListener != null) {
-                task.addOnSuccessListener(onSuccessListener);
+                if (onSuccessListener != null) {
+                    task.addOnSuccessListener(onSuccessListener);
+                }
+                if (onFailureListener != null) {
+                    task.addOnFailureListener(onFailureListener);
+
+                }
+                //debug listeners
+                task.addOnSuccessListener(bytes -> {
+                    Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+                    Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+                    if (image != null) {
+                        CacheUtils.addBitmapToMemoryCache(storageReference.getPath(), image);
+                    }
+                    Log.d(Constant.CACHE_UTILS, "storeImage:ok ");
+
+                }).addOnFailureListener(exception -> {
+                    // Handle any errors
+                    Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+                    Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
+                });
+            } catch (RuntimeException e) {
+                Log.w(Constant.NEARBY_CHAT, "loadImage: ", e);
             }
-            if (onFailureListener != null) {
-                task.addOnFailureListener(onFailureListener);
-
-            }
-            //debug listeners
-            task.addOnSuccessListener(bytes -> {
-                Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
-            }).addOnFailureListener(exception -> {
-                // Handle any errors
-                Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
-                Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
-            });
-        } catch (RuntimeException e) {
-            Log.w(Constant.NEARBY_CHAT, "loadImage: ", e);
         }
     }
 

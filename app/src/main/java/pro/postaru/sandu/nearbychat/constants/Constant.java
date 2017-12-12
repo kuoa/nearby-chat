@@ -7,4 +7,5 @@ public class Constant {
     public static final String LOCATION_SERVICES = "LocationServices";
 
     public static final String FIREBASE_STORAGE_REFERENCE = "gs://nearby-chat-a3151.appspot.com";
+    public static final String CACHE_UTILS = "CacheUtils";
 }

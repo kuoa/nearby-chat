@@ -122,8 +122,12 @@ public class MapViewFragment extends Fragment {
 
             DatabaseUtils.loadProfileImage(key, bytes -> {
                 Bitmap avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                Bitmap resizedBitmap = Bitmap.createScaledBitmap(avatar, imageSize, imageSize, false);
-                marker.setIcon(BitmapDescriptorFactory.fromBitmap(resizedBitmap));
+                if (avatar != null) {
+                    Bitmap resizedBitmap = Bitmap.createScaledBitmap(avatar, imageSize, imageSize, false);
+                    if (resizedBitmap != null) {
+                        marker.setIcon(BitmapDescriptorFactory.fromBitmap(resizedBitmap));
+                    }
+                }
             }, null);
         }
 
@@ -198,7 +202,6 @@ public class MapViewFragment extends Fragment {
 
 
     private Conversation createConversation(String ownerId, String partnerId) {
-
         String key = DatabaseUtils.getConversationsReferenceById(ownerId)
                 .push()
                 .getKey();
@@ -239,7 +242,7 @@ public class MapViewFragment extends Fragment {
 
         geoFire = DatabaseUtils.getNewLocationDatabase();
         userId = DatabaseUtils.getCurrentUUID();
-        activity.addLocationCallback(locationCallback);
+
 
     }
 
@@ -251,10 +254,9 @@ public class MapViewFragment extends Fragment {
         mMapView = (MapView) rootView.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
         mMapView.getMapAsync(mMap -> {
-
             googleMap = mMap;
             googleMap.setOnMarkerClickListener(markerClickListener);
-
+            activity.addLocationCallback(locationCallback);
 
         });
 

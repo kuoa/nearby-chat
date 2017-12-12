@@ -174,19 +174,9 @@ public class OnlineActivity extends AppCompatActivity
         //remove last location from geofire
         DatabaseUtils.getNewLocationDatabase().removeLocation(userId);
 
-
         firebaseAuth.signOut();
-
-        // remove the firebaseUser from the online database
-        removeOnlineUser();
     }
 
-    public void removeOnlineUser() {
-        Log.d("NNN", "remove online firebaseUser: success");
-        database.child(Database.onlineUsers)
-                .child(firebaseUser.getUid())
-                .removeValue();
-    }
 
     public void mountMainActivity() {
         Intent intent = new Intent(this, MainActivity.class);
@@ -276,9 +266,9 @@ public class OnlineActivity extends AppCompatActivity
     @Override
     public void mountChatActivity(UserProfile userProfile) {
         Intent intent = new Intent(this, ChatActivity.class);
-        //todo undo this
         userProfile.setAvatar(null);
         intent.putExtra(ChatActivity.PARTNER_USER_PROFILE, userProfile);
+
         startActivity(intent);
     }
 
@@ -412,7 +402,6 @@ public class OnlineActivity extends AppCompatActivity
                 case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                     // Location settings are not satisfied. However, we have no way
                     // to fix the settings so we won't show the dialog.
-                    //todo clean
                     break;
             }
         });
