@@ -2,7 +2,6 @@ package pro.postaru.sandu.nearbychat.utils;
 
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
@@ -22,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
-import pro.postaru.sandu.nearbychat.interfaces.OnBitmapLoadedListener;
 
 import static pro.postaru.sandu.nearbychat.constants.Constant.FIREBASE_STORAGE_REFERENCE;
 import static pro.postaru.sandu.nearbychat.constants.Database.userLocation;
@@ -108,21 +106,25 @@ public class DatabaseUtils {
         });
     }
 
-    public static void loadProfileImage(String id, OnBitmapLoadedListener onBitmapLoadedListener) {
+    public static void loadProfileImage(String id, OnSuccessListener<byte[]> onSuccessListener, OnFailureListener onFailureListener) {
         final long ONE_MEGABYTE = 1024 * 1024;
         StorageReference storageReferenceForId = getProfileStorageReferenceForId(id);
         Task<byte[]> task = storageReferenceForId.getBytes(ONE_MEGABYTE);
         //TODO BUG HERE
+        if (onSuccessListener != null) {
+            task.addOnSuccessListener(onSuccessListener);
+
+        }
+        if (onFailureListener != null) {
+            task.addOnFailureListener(onFailureListener);
+
+        }
+        //debug listeners
         task.addOnSuccessListener(bytes -> {
-            Log.d(Constant.NEARBY_CHAT, "loadProfileImage() called with: id = [" + id + "], onBitmapLoadedListener = [" + onBitmapLoadedListener + "]");
-
-            // Data for "profile" is returns, use this as needed
-            Bitmap avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            onBitmapLoadedListener.OnBitmapLoaded(avatar);
-
+            Log.d(Constant.NEARBY_CHAT, "loadProfileImage() called with: id = [" + id + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
         }).addOnFailureListener(exception -> {
             // Handle any errors
-            Log.d(Constant.NEARBY_CHAT, "loadProfileImage() called with: id = [" + id + "], onBitmapLoadedListener = [" + onBitmapLoadedListener + "]");
+            Log.d(Constant.NEARBY_CHAT, "loadProfileImage() called with: id = [" + id + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
             Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
         });
     }

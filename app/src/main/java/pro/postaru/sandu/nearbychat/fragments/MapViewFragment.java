@@ -4,6 +4,7 @@ package pro.postaru.sandu.nearbychat.fragments;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -119,10 +120,11 @@ public class MapViewFragment extends Fragment {
                 }
             });
 
-            DatabaseUtils.loadProfileImage(key, bitmap -> {
-                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, imageSize, imageSize, false);
+            DatabaseUtils.loadProfileImage(key, bytes -> {
+                Bitmap avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(avatar, imageSize, imageSize, false);
                 marker.setIcon(BitmapDescriptorFactory.fromBitmap(resizedBitmap));
-            });
+            }, null);
         }
 
 

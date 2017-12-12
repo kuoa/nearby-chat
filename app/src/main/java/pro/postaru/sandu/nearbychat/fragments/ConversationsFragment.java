@@ -1,5 +1,7 @@
 package pro.postaru.sandu.nearbychat.fragments;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -30,7 +32,6 @@ public class ConversationsFragment extends Fragment {
     private ActiveConversationsAdapter activeConversationsAdapter;
     private ListView conversationsView;
     private ProgressBar mainProgresBar;
-
     private final ValueEventListener getUserProfileListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -41,10 +42,12 @@ public class ConversationsFragment extends Fragment {
 
             if (userProfile != null) {
                 activeConversationsAdapter.add(userProfile);
-                DatabaseUtils.loadProfileImage(userProfile.getId(), bitmap -> {
-                    userProfile.setAvatar(bitmap);
+                DatabaseUtils.loadProfileImage(userProfile.getId(), result -> {
+                    Bitmap avatar = BitmapFactory.decodeByteArray(result, 0, result.length);
+                    userProfile.setAvatar(avatar);
                     activeConversationsAdapter.notifyDataSetChanged();
-                });
+
+                }, null);
                 Log.w("BBB", "id " + userProfile.getId());
             }
         }

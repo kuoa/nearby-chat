@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -295,13 +296,14 @@ public class ProfileActivity extends AppCompatActivity {
 
         userProfileDatabaseReference.addListenerForSingleValueEvent(userProfileListener);
 
-        DatabaseUtils.loadProfileImage(userId, bitmap -> {
-            userProfile.setAvatar(bitmap);
-            profileImage.setImageBitmap(bitmap);
+        DatabaseUtils.loadProfileImage(userId, bytes -> {
+            Bitmap avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            userProfile.setAvatar(avatar);
+            profileImage.setImageBitmap(avatar);
 
             profileImage.setVisibility(View.VISIBLE);
             profileImageIcon.setVisibility(View.VISIBLE);
-        });
+        }, null);
     }
 
 
