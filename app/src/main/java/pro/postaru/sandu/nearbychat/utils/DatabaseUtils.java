@@ -7,6 +7,8 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.firebase.geofire.GeoFire;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -52,12 +54,12 @@ public class DatabaseUtils {
         return null;
     }
 
-    public static StorageReference getStorageReference() {
+    public static StorageReference getCurrentProfileStorageReference() {
 
-        return getStorageReferenceForId(getCurrentUUID());
+        return getProfileStorageReferenceForId(getCurrentUUID());
     }
 
-    public static StorageReference getStorageReferenceForId(String id) {
+    public static StorageReference getProfileStorageReferenceForId(String id) {
 
         return getStorageDatabase().getReference("profile/" + id + ".jpeg");
     }
@@ -66,30 +68,51 @@ public class DatabaseUtils {
         return FirebaseStorage.getInstance(FIREBASE_STORAGE_REFERENCE);
     }
 
-    public static void savePicture(Bitmap bitmap) {
-        StorageReference reference = DatabaseUtils.getStorageReference();
+    public static void saveProfilePicture(Bitmap bitmap, OnSuccessListener<UploadTask.TaskSnapshot> onSuccessListener, OnFailureListener onFailureListener) {
+        StorageReference reference = DatabaseUtils.getCurrentProfileStorageReference();
+        savePictureOnline(bitmap, reference, onSuccessListener, onFailureListener);
+    }
 
+    /**
+     * Store the provided image online and call the listener when it's done
+     * The listeners are optional
+     *
+     * @param bitmap            the image
+     * @param reference         the storage reference for the image
+     * @param onSuccessListener listener when the upload is ok
+     * @param onFailureListener listener when the upload is ko
+     */
+    public static void savePictureOnline(Bitmap bitmap, StorageReference reference, OnSuccessListener<UploadTask.TaskSnapshot> onSuccessListener, OnFailureListener onFailureListener) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
         byte[] data = byteArrayOutputStream.toByteArray();
 
         UploadTask uploadTask = reference.putBytes(data);
+
+        if (onSuccessListener != null) {
+            uploadTask.addOnSuccessListener(onSuccessListener);
+        }
+        if (onFailureListener != null) {
+            uploadTask.addOnFailureListener(onFailureListener);
+        }
+
+        //debug listeners
         uploadTask.addOnFailureListener(exception -> {
             // Handle unsuccessful uploads
-            Log.w(Constant.NEARBY_CHAT, "saveProfileOnline: ", exception);
+            Log.w(Constant.NEARBY_CHAT, "save picture online: ko ", exception);
         }).addOnSuccessListener(taskSnapshot -> {
-            Log.d(Constant.NEARBY_CHAT, "saveProfileOnline profile image: Medatada= " + taskSnapshot.getMetadata());
-
+            Log.d(Constant.NEARBY_CHAT, "save picture: ok");
             // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
             Uri downloadUrl = taskSnapshot.getDownloadUrl();
-            Log.d(Constant.NEARBY_CHAT, "saveProfileOnline profile image: uri= " + downloadUrl);
+            Log.d(Constant.NEARBY_CHAT, "save picture online : uri= " + downloadUrl);
         });
     }
 
     public static void loadProfileImage(String id, OnBitmapLoadedListener onBitmapLoadedListener) {
         final long ONE_MEGABYTE = 1024 * 1024;
-        StorageReference storageReferenceForId = getStorageReferenceForId(id);
+        StorageReference storageReferenceForId = getProfileStorageReferenceForId(id);
         Task<byte[]> task = storageReferenceForId.getBytes(ONE_MEGABYTE);
+        //TODO BUG HERE
         task.addOnSuccessListener(bytes -> {
             Log.d(Constant.NEARBY_CHAT, "loadProfileImage() called with: id = [" + id + "], onBitmapLoadedListener = [" + onBitmapLoadedListener + "]");
 

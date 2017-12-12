@@ -169,7 +169,7 @@ public class OnlineActivity extends AppCompatActivity
     public void requestLogout() {
         Log.d("BB", "logout:success");
         //remove last location from geofire
-
+        //KO TODO ko
         DatabaseUtils.getNewLocationDatabase().removeLocation(userProfile.getId());
 
 
@@ -286,6 +286,7 @@ public class OnlineActivity extends AppCompatActivity
      * Async task
      */
     private void loadProfileOnline() {
+        //TODO   ko
         Log.d(Constant.NEARBY_CHAT, "Load profile online and add listener for id " + firebaseUser.getUid());
         database.child(Database.userProfiles).child(firebaseUser.getUid()).addListenerForSingleValueEvent(userProfileListener);
         loadProfileImage();

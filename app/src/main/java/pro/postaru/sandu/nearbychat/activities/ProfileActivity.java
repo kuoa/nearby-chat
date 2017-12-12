@@ -26,10 +26,13 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.UploadTask;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.constants.Constant;
@@ -270,10 +273,15 @@ public class ProfileActivity extends AppCompatActivity {
      */
     private void saveProfileOnline() {
         Log.d(Constant.NEARBY_CHAT, "Save profile online for id  " + userId);
+
+        OnSuccessListener<UploadTask.TaskSnapshot> onSuccessListener = taskSnapshot -> Toast.makeText(this, "Upload successful", Toast.LENGTH_SHORT).show();
+        OnFailureListener onFailureListener = e -> Toast.makeText(this, "Upload failed miserably", Toast.LENGTH_SHORT).show();
+
         userProfileDatabaseReference.setValue(userProfile);
         profileImage.setDrawingCacheEnabled(true);
         profileImage.buildDrawingCache();
-        DatabaseUtils.savePicture(profileImage.getDrawingCache());
+
+        DatabaseUtils.saveProfilePicture(profileImage.getDrawingCache(), onSuccessListener, onFailureListener);
     }
 
 
