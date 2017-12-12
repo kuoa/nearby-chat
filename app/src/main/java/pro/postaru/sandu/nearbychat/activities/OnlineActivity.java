@@ -372,18 +372,26 @@ public class OnlineActivity extends AppCompatActivity
 
     public void initLocation() {
         createLocationRequest();
+        //location provider client
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        initLocationSettings();
+
+    }
+
+    private void initLocationSettings() {
+        //Builder for the location settings provider
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        //add a location request to the lsr
         builder.addLocationRequest(mLocationRequest);
+        //we retrieve the client settings
         SettingsClient client = LocationServices.getSettingsClient(this);
+        //we check the location settings with the builder
         Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-        task.addOnSuccessListener(this, locationSettingsResponse -> {
-            Log.d(Constant.LOCATION_SERVICES, "initLocation: ok");
-        });
+        task.addOnSuccessListener(this, locationSettingsResponse -> Log.d(Constant.LOCATION_SERVICES, "initLocation: ok"));
 
         task.addOnFailureListener(this, e -> {
             Log.d(Constant.LOCATION_SERVICES, "initLocation: ko");
-
+            // code from the google sample
             int statusCode = ((ApiException) e).getStatusCode();
             switch (statusCode) {
                 case CommonStatusCodes.RESOLUTION_REQUIRED:
@@ -411,6 +419,7 @@ public class OnlineActivity extends AppCompatActivity
     private void createLocationRequest() {
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(2000); //TODO variable refresh 2000 for debug only
+        mLocationRequest.setSmallestDisplacement(10);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
     }
 
