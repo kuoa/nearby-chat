@@ -1,6 +1,8 @@
 package pro.postaru.sandu.nearbychat.adapters;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
@@ -15,11 +17,13 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.models.Message;
+import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
 public class ChatAdapter extends ArrayAdapter<Message> {
 
@@ -70,9 +74,20 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         else {
             params = (RelativeLayout.LayoutParams) imageView.getLayoutParams();
 
-            // download and set image
-            imageView.setVisibility(View.VISIBLE);
-            messageView.setVisibility(View.GONE);
+            String imageUrl = message.getContent();
+
+            StorageReference storageReference = DatabaseUtils.getStorageDatabase()
+                    .getReferenceFromUrl(imageUrl);
+
+            DatabaseUtils.loadImage(storageReference,
+                    bytes -> {
+                        Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        imageView.setImageBitmap(image);
+
+                        imageView.setVisibility(View.VISIBLE);
+                        messageView.setVisibility(View.GONE);
+                    },
+                    null);
         }
 
         // custom style for a message sent by me
