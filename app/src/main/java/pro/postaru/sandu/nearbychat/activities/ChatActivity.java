@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -32,6 +33,7 @@ import com.google.firebase.database.DatabaseError;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,6 +66,9 @@ public class ChatActivity extends AppCompatActivity {
 
     private EditText messageEditView;
     private ImageButton messageSendButton;
+
+    private Uri imageUri;
+
     private final TextWatcher editMessageTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -250,6 +255,12 @@ public class ChatActivity extends AppCompatActivity {
 
         if (!isAndroidVersionNew || hasCameraPermission()) {
             Intent takePhotoIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+
+
+            imageUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".my.package.name.provider", createImageFile());
+
+            takePhotoIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
             startActivityForResult(takePhotoIntent, CAMERA);
         }
     }
@@ -261,12 +272,15 @@ public class ChatActivity extends AppCompatActivity {
         if (resultCode == this.RESULT_CANCELED) {
             return;
         }
+
+        String path = "";
+
         if (requestCode == GALLERY) {
             if (data != null) {
                 Uri contentURI = data.getData();
                 try {
                     Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
-                    String path = saveImage(bitmap);
+                    path = saveImage(bitmap);
                     Toast.makeText(ChatActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
 
                     //TODO SET HANDLER FOR UPLOADING THE IMAGE
@@ -280,9 +294,15 @@ public class ChatActivity extends AppCompatActivity {
 
         } else if (requestCode == CAMERA) {
 
-            Bitmap imageBitmap = (Bitmap) data.getExtras().get("data");
+            try {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                imageUri = null;
+                path = saveImage(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-            String path = saveImage(imageBitmap);
+
             Toast.makeText(ChatActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
 
             //TODO SET HANDLER FOR UPLOADING THE IMAGE
@@ -327,38 +347,58 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
+    private File createImageFile() {
+        File path = Environment.getExternalStoragePublicDirectory(
+                "NearbyChat");
+        File file = new File(path, DatabaseUtils.getCurrentUUID() + "-" + Calendar.getInstance()
+                .getTimeInMillis() + ".jpg");
+
+        if (!path.exists()) {
+            path.mkdirs();
+        }
+        try {
+            file.createNewFile();
+            return file;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private ByteArrayOutputStream compressImage(Bitmap myBitmap) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        myBitmap.compress(Bitmap.CompressFormat.JPEG, 80, bytes);
+
+        return bytes;
+    }
+
+    private Bitmap resizeImage(Bitmap myBitmap) {
+        return Bitmap.createScaledBitmap(myBitmap, (int) (myBitmap.getWidth() * 0.5),
+                (int) (myBitmap.getHeight() * 0.5), true);
+    }
+
     public String saveImage(Bitmap myBitmap) {
 
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        myBitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
+        File file = createImageFile();
+        Bitmap resized = resizeImage(myBitmap);
+        ByteArrayOutputStream bytes = compressImage(resized);
 
-        try {
-            File path = Environment.getExternalStoragePublicDirectory(
-                    "NearbyChat");
-            File file = new File(path, DatabaseUtils.getCurrentUUID() + "-" + Calendar.getInstance()
-                    .getTimeInMillis() + ".jpg");
-
-            if (!path.exists()) {
-                path.mkdirs();
-            }
-
-            file.createNewFile();
-
-            FileOutputStream fo = new FileOutputStream(file);
+        try (FileOutputStream fo = new FileOutputStream(file)) {
             fo.write(bytes.toByteArray());
 
             MediaScannerConnection.scanFile(this,
                     new String[]{file.getPath()},
                     new String[]{"image/jpeg"}, null);
-            fo.close();
 
-            Log.d("TAG", "File Saved::--->" + file.getAbsolutePath());
-            return file.getAbsolutePath();
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        return "";
+        Log.d("TAG", "File Saved::--->" + file.getAbsolutePath());
+        return file.getAbsolutePath();
     }
 
 
