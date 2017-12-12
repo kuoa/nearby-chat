@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -67,7 +68,10 @@ public class ChatActivity extends AppCompatActivity {
     private EditText messageEditView;
     private ImageButton messageSendButton;
 
+    private String imagePath;
+    private String imageUrl;
     private Uri imageUri;
+    private Bitmap resizedImage;
 
     private final TextWatcher editMessageTextWatcher = new TextWatcher() {
         @Override
@@ -176,18 +180,25 @@ public class ChatActivity extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 
+
     private void sendMessage() {
-
-        String content = messageEditView.getText().toString();
-        messageEditView.setText("");
-
-
         Message newMessage = new Message();
 
-        if (content.length() != 0) {
+        String content;
+
+        // text message
+        if (imageUrl == null) {
+            content = messageEditView.getText().toString();
             newMessage.setType(Message.Type.TEXT);
-        } else {
+
+            messageEditView.setText("");
+        }
+        // image message
+        else {
+            content = imageUrl;
             newMessage.setType(Message.Type.IMAGE);
+
+            imageUrl = null;
         }
 
         newMessage.setContent(content);
@@ -205,6 +216,21 @@ public class ChatActivity extends AppCompatActivity {
                 .setValue(newMessage);
     }
 
+    private void sendImage(Bitmap image) {
+
+        StorageReference storageReference = DatabaseUtils.getStorageDatabase().getReference(imagePath);
+        DatabaseUtils.savePictureOnline(image, storageReference, taskSnapshot -> {
+            Log.w("BBB", "Image uploaded, now sending message");
+            // send a image message
+            storageReference.getDownloadUrl().addOnSuccessListener(e -> {
+                imageUrl = e.toString();
+                sendMessage();
+            });
+
+        }, e -> {
+            Log.w("BBB", e.getMessage());
+        });
+    }
 
     private void showImageAttachementDialog() {
         AlertDialog.Builder pictureDialog = new AlertDialog.Builder(this);
@@ -273,18 +299,17 @@ public class ChatActivity extends AppCompatActivity {
             return;
         }
 
-        String path = "";
 
         if (requestCode == GALLERY) {
             if (data != null) {
                 Uri contentURI = data.getData();
                 try {
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
-                    path = saveImage(bitmap);
+                    Bitmap image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
+                    imagePath = saveImage(image);
+
+                    sendImage(resizedImage);
+
                     Toast.makeText(ChatActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
-
-                    //TODO SET HANDLER FOR UPLOADING THE IMAGE
-
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -295,18 +320,18 @@ public class ChatActivity extends AppCompatActivity {
         } else if (requestCode == CAMERA) {
 
             try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
-                imageUri = null;
-                path = saveImage(bitmap);
+                Bitmap image = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                imagePath = saveImage(image);
+                Toast.makeText(ChatActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
+
+                sendImage(resizedImage);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-
-            Toast.makeText(ChatActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
-
-            //TODO SET HANDLER FOR UPLOADING THE IMAGE
         }
+
+
     }
 
     private boolean hasWritePermission() {
@@ -374,15 +399,32 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private Bitmap resizeImage(Bitmap myBitmap) {
-        return Bitmap.createScaledBitmap(myBitmap, (int) (myBitmap.getWidth() * 0.5),
-                (int) (myBitmap.getHeight() * 0.5), true);
+
+        int width = myBitmap.getWidth();
+        int height = myBitmap.getHeight();
+
+        float max = Math.max(width, height);
+        float ratio;
+
+        if (max < 1024) {
+            ratio = 1;
+        } else {
+            ratio = (1024 / max) - 0.05f;
+            Log.w("Resize", ratio + "");
+        }
+
+        Log.w("RESIZE", width * ratio + "");
+        Log.w("RESIZE", height * ratio + "");
+
+        return Bitmap.createScaledBitmap(myBitmap, (int) (width * ratio),
+                (int) (height * ratio), true);
     }
 
     public String saveImage(Bitmap myBitmap) {
 
         File file = createImageFile();
-        Bitmap resized = resizeImage(myBitmap);
-        ByteArrayOutputStream bytes = compressImage(resized);
+        resizedImage = resizeImage(myBitmap);
+        ByteArrayOutputStream bytes = compressImage(resizedImage);
 
         try (FileOutputStream fo = new FileOutputStream(file)) {
             fo.write(bytes.toByteArray());
@@ -398,6 +440,7 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         Log.d("TAG", "File Saved::--->" + file.getAbsolutePath());
+
         return file.getAbsolutePath();
     }
 
