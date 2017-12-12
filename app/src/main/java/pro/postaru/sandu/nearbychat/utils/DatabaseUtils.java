@@ -111,25 +111,30 @@ public class DatabaseUtils {
     }
 
     public static void loadImage(StorageReference storageReference, OnSuccessListener<byte[]> onSuccessListener, OnFailureListener onFailureListener) {
-        final long ONE_MEGABYTE = 1024 * 1024;
+        try {
 
-        Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE);
-        //TODO BUG HERE
-        if (onSuccessListener != null) {
-            task.addOnSuccessListener(onSuccessListener);
-        }
-        if (onFailureListener != null) {
-            task.addOnFailureListener(onFailureListener);
+            final long ONE_MEGABYTE = 1024 * 1024;
 
+            Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE);//async storage exception when the image doesn't exist
+
+            if (onSuccessListener != null) {
+                task.addOnSuccessListener(onSuccessListener);
+            }
+            if (onFailureListener != null) {
+                task.addOnFailureListener(onFailureListener);
+
+            }
+            //debug listeners
+            task.addOnSuccessListener(bytes -> {
+                Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+            }).addOnFailureListener(exception -> {
+                // Handle any errors
+                Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+                Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
+            });
+        } catch (RuntimeException e) {
+            Log.w(Constant.NEARBY_CHAT, "loadImage: ", e);
         }
-        //debug listeners
-        task.addOnSuccessListener(bytes -> {
-            Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
-        }).addOnFailureListener(exception -> {
-            // Handle any errors
-            Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
-            Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
-        });
     }
 
     public static DatabaseReference getUserProfileReferenceById(String userId) {
