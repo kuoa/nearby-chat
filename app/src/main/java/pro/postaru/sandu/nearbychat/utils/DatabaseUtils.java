@@ -107,13 +107,16 @@ public class DatabaseUtils {
     }
 
     public static void loadProfileImage(String id, OnSuccessListener<byte[]> onSuccessListener, OnFailureListener onFailureListener) {
+        loadImage(getProfileStorageReferenceForId(id), onSuccessListener, onFailureListener);
+    }
+
+    public static void loadImage(StorageReference storageReference, OnSuccessListener<byte[]> onSuccessListener, OnFailureListener onFailureListener) {
         final long ONE_MEGABYTE = 1024 * 1024;
-        StorageReference storageReferenceForId = getProfileStorageReferenceForId(id);
-        Task<byte[]> task = storageReferenceForId.getBytes(ONE_MEGABYTE);
+
+        Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE);
         //TODO BUG HERE
         if (onSuccessListener != null) {
             task.addOnSuccessListener(onSuccessListener);
-
         }
         if (onFailureListener != null) {
             task.addOnFailureListener(onFailureListener);
@@ -121,10 +124,10 @@ public class DatabaseUtils {
         }
         //debug listeners
         task.addOnSuccessListener(bytes -> {
-            Log.d(Constant.NEARBY_CHAT, "loadProfileImage() called with: id = [" + id + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+            Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
         }).addOnFailureListener(exception -> {
             // Handle any errors
-            Log.d(Constant.NEARBY_CHAT, "loadProfileImage() called with: id = [" + id + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+            Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
             Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
         });
     }

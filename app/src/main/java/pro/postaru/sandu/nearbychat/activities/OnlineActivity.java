@@ -71,10 +71,12 @@ public class OnlineActivity extends AppCompatActivity
         OnlineUsersAdapter.OnAdapterInteractionListener,
         ActiveConversationsAdapter.OnAdapterInteractionListener, MapViewFragment.OnFragmentInteractionListener {
 
+    public static final int INTERVAL = 60000;
     private UserProfile userProfile;
 
     private ViewPager viewPager;
     private DrawerLayout drawer;
+    private String userId;
     private final ValueEventListener userProfileListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -83,7 +85,7 @@ public class OnlineActivity extends AppCompatActivity
 
             if (userProfileLocal != null) {
                 userProfile = userProfileLocal;
-                Log.w(Constant.NEARBY_CHAT, "Online profile loaded for id " + OnlineActivity.this.userProfile.getId());
+                Log.w(Constant.NEARBY_CHAT, "Online profile loaded for id " + OnlineActivity.this.userId);
 
                 initProfileView(drawer);
             } else {
@@ -159,6 +161,7 @@ public class OnlineActivity extends AppCompatActivity
         firebaseUser = firebaseAuth.getCurrentUser();
 
         userProfile = new UserProfile();
+        userId = DatabaseUtils.getCurrentUUID();
 
         initLocation();
 
@@ -169,8 +172,7 @@ public class OnlineActivity extends AppCompatActivity
     public void requestLogout() {
         Log.d("BB", "logout:success");
         //remove last location from geofire
-        //KO TODO ko
-        DatabaseUtils.getNewLocationDatabase().removeLocation(userProfile.getId());
+        DatabaseUtils.getNewLocationDatabase().removeLocation(userId);
 
 
         firebaseAuth.signOut();
@@ -286,7 +288,6 @@ public class OnlineActivity extends AppCompatActivity
      * Async task
      */
     private void loadProfileOnline() {
-        //TODO   ko
         Log.d(Constant.NEARBY_CHAT, "Load profile online and add listener for id " + firebaseUser.getUid());
         database.child(Database.userProfiles).child(firebaseUser.getUid()).addListenerForSingleValueEvent(userProfileListener);
         loadProfileImage();
@@ -419,9 +420,9 @@ public class OnlineActivity extends AppCompatActivity
 
     private void createLocationRequest() {
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(2000); //TODO variable refresh 2000 for debug only
+        mLocationRequest.setInterval(INTERVAL);
         mLocationRequest.setSmallestDisplacement(10);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);//test 4g power balance
     }
 
 }
