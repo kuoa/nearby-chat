@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -52,25 +53,46 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         Message message = messages.get(position);
 
         TextView messageView = (TextView) convertView.findViewById(R.id.chat_message);
-        messageView.setText(message.getText());
+        ImageView imageView = (ImageView) convertView.findViewById(R.id.chat_image);
 
-        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) messageView.getLayoutParams();
+        RelativeLayout.LayoutParams params;
+
+        // text
+        if (message.getType() == Message.Type.TEXT) {
+
+            params = (RelativeLayout.LayoutParams) messageView.getLayoutParams();
+
+            messageView.setText(message.getContent());
+            messageView.setVisibility(View.VISIBLE);
+            imageView.setVisibility(View.GONE);
+        }
+        // image
+        else {
+            params = (RelativeLayout.LayoutParams) imageView.getLayoutParams();
+
+            // download and set image
+            imageView.setVisibility(View.VISIBLE);
+            messageView.setVisibility(View.GONE);
+        }
 
         // custom style for a message sent by me
         if (message.getSenderId().equals(user.getUid())) {
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
+
             messageView.setBackgroundResource(R.drawable.rounded_corner_sent);
             messageView.setTextColor(Color.BLACK);
 
         } else {
             params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, 0);
+
             messageView.setBackgroundResource(R.drawable.rounded_corner_received);
             messageView.setTextColor(Color.WHITE);
         }
 
         messageView.setPadding(20, 10, 20, 10);
+        imageView.setPadding(20, 10, 20, 10);
 
         return convertView;
     }

@@ -1,6 +1,19 @@
 package pro.postaru.sandu.nearbychat.activities;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.media.MediaScannerConnection;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -11,12 +24,18 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -26,9 +45,16 @@ import pro.postaru.sandu.nearbychat.models.Message;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
+
 public class ChatActivity extends AppCompatActivity {
 
     public static final String PARTNER_USER_PROFILE = "PARTNER_USER_PROFILE";
+
+    private static final int CAMERA = 1;
+    private static final int GALLERY = 2;
+
+    private static final String[] WRITE_EXTERNAL_PERMISSION = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
+    private static final String[] CAMERA_PERMISSION = new String[]{Manifest.permission.CAMERA};
 
     private String conversationId;
 
@@ -59,8 +85,10 @@ public class ChatActivity extends AppCompatActivity {
 
         }
     };
+    private ImageButton messageAtachImageButton;
     private ListView messageListView;
     private ProgressBar progressBar;
+
     private final ChildEventListener messageListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -98,6 +126,7 @@ public class ChatActivity extends AppCompatActivity {
             Log.w("BBB", "loadPost:onCancelled", databaseError.toException());
         }
     };
+
     private UserProfile conversationPartner;
 
 
@@ -105,7 +134,6 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
 
         // spinner
 
@@ -119,6 +147,9 @@ public class ChatActivity extends AppCompatActivity {
         messageSendButton = (ImageButton) findViewById(R.id.message_send);
         messageSendButton.setEnabled(false);
         messageSendButton.setOnClickListener(v -> sendMessage());
+
+        messageAtachImageButton = (ImageButton) findViewById(R.id.message_attach_image);
+        messageAtachImageButton.setOnClickListener(v -> showImageAttachementDialog());
 
         messages = new ArrayList<>();
 
@@ -140,13 +171,21 @@ public class ChatActivity extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 
-    public void sendMessage() {
+    private void sendMessage() {
 
         String content = messageEditView.getText().toString();
         messageEditView.setText("");
 
+
         Message newMessage = new Message();
-        newMessage.setText(content);
+
+        if (content.length() != 0) {
+            newMessage.setType(Message.Type.TEXT);
+        } else {
+            newMessage.setType(Message.Type.IMAGE);
+        }
+
+        newMessage.setContent(content);
         newMessage.setDate(new Date());
         newMessage.setSenderId(DatabaseUtils.getCurrentUUID());
 
@@ -160,6 +199,168 @@ public class ChatActivity extends AppCompatActivity {
                 .child(id)
                 .setValue(newMessage);
     }
+
+
+    private void showImageAttachementDialog() {
+        AlertDialog.Builder pictureDialog = new AlertDialog.Builder(this);
+        pictureDialog.setTitle("Select Action");
+        String[] pictureDialogItems = {
+                "Select photo from gallery",
+                "Capture photo from camera"};
+        pictureDialog.setItems(pictureDialogItems,
+                (dialog, which) -> {
+                    switch (which) {
+                        case 0:
+                            choosePhotoFromGallery();
+                            break;
+                        case 1:
+                            takePhotoFromCamera();
+                            break;
+                    }
+                });
+        pictureDialog.show();
+    }
+
+    public void choosePhotoFromGallery() {
+
+        boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
+        if (isAndroidVersionNew) {
+            if (!hasWritePermission()) {
+                ActivityCompat.requestPermissions(this, WRITE_EXTERNAL_PERMISSION, 1);
+            }
+        }
+
+        if (!isAndroidVersionNew || hasWritePermission()) {
+
+            Intent galleryIntent = new Intent(Intent.ACTION_PICK,
+                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+
+            startActivityForResult(galleryIntent, GALLERY);
+        }
+    }
+
+    private void takePhotoFromCamera() {
+
+        boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
+        if (isAndroidVersionNew) {
+            if (!hasCameraPermission()) {
+                ActivityCompat.requestPermissions(this, new String[]{CAMERA_PERMISSION[0], WRITE_EXTERNAL_PERMISSION[0]}, 1);
+            }
+        }
+
+        if (!isAndroidVersionNew || hasCameraPermission()) {
+            Intent takePhotoIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(takePhotoIntent, CAMERA);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == this.RESULT_CANCELED) {
+            return;
+        }
+        if (requestCode == GALLERY) {
+            if (data != null) {
+                Uri contentURI = data.getData();
+                try {
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), contentURI);
+                    String path = saveImage(bitmap);
+                    Toast.makeText(ChatActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
+
+                    //TODO SET HANDLER FOR UPLOADING THE IMAGE
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(ChatActivity.this, "Failed!", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        } else if (requestCode == CAMERA) {
+
+            Bitmap imageBitmap = (Bitmap) data.getExtras().get("data");
+
+            String path = saveImage(imageBitmap);
+            Toast.makeText(ChatActivity.this, "Image Saved!", Toast.LENGTH_SHORT).show();
+
+            //TODO SET HANDLER FOR UPLOADING THE IMAGE
+        }
+    }
+
+    private boolean hasWritePermission() {
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean hasCameraPermission() {
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
+            case GALLERY: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    choosePhotoFromGallery();
+
+                } else {
+                    Toast.makeText(this, "GALLERY DENIED", Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
+
+            case CAMERA: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    takePhotoFromCamera();
+
+                } else {
+                    Toast.makeText(this, "CAMERA DENIED", Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
+        }
+    }
+
+    public String saveImage(Bitmap myBitmap) {
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        myBitmap.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
+
+        try {
+            File path = Environment.getExternalStoragePublicDirectory(
+                    "NearbyChat");
+            File file = new File(path, DatabaseUtils.getCurrentUUID() + "-" + Calendar.getInstance()
+                    .getTimeInMillis() + ".jpg");
+
+            if (!path.exists()) {
+                path.mkdirs();
+            }
+
+            file.createNewFile();
+
+            FileOutputStream fo = new FileOutputStream(file);
+            fo.write(bytes.toByteArray());
+
+            MediaScannerConnection.scanFile(this,
+                    new String[]{file.getPath()},
+                    new String[]{"image/jpeg"}, null);
+            fo.close();
+
+            Log.d("TAG", "File Saved::--->" + file.getAbsolutePath());
+            return file.getAbsolutePath();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+
+        return "";
+    }
+
 
     private String getConversationId(String partnerId) {
         String myId = DatabaseUtils.getCurrentUUID();

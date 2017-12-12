@@ -53,13 +53,13 @@ public class Utils {
         m1.setId("m1");
         m1.setSenderId("XXXFbBK2pGPK7zorutFJrg0XZpL2");
         m1.setDate(new Date());
-        m1.setText("First message from xx");
+        m1.setContent("First message from xx");
 
         Message m2 = new Message();
         m2.setId("m2");
         m2.setSenderId("RpmFbBK2pGPK7zorutFJrg0XZpL2");
         m2.setDate(new Date());
-        m2.setText("Reply message from rpm");
+        m2.setContent("Reply message from rpm");
 
         List<Message> messages = new ArrayList<>();
         messages.add(m1);

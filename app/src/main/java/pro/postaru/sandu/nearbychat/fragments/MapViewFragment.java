@@ -345,8 +345,11 @@ public class MapViewFragment extends Fragment {
     }
 
     private void clearGeoQuery() {
-        geoQuery.removeAllListeners();
-        geoQuery = null;
+
+        if (geoQuery != null) {
+            geoQuery.removeAllListeners();
+            geoQuery = null;
+        }
     }
 
     public interface OnFragmentInteractionListener {

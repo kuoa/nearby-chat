@@ -7,10 +7,17 @@ import java.util.Date;
 @IgnoreExtraProperties
 public class Message {
 
+    public enum Type {
+        TEXT, IMAGE
+    }
+
+    ;
+
     private String id;
     private String senderId;
-    private String text;
+    private String content;
     private Date date;
+    private Type type;
 
     // required empty constructor for firebase loading
 
@@ -33,12 +40,12 @@ public class Message {
         this.senderId = senderId;
     }
 
-    public String getText() {
-        return text;
+    public String getContent() {
+        return content;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setContent(String content) {
+        this.content = content;
     }
 
     public Date getDate() {
@@ -49,4 +56,11 @@ public class Message {
         this.date = date;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
 }
