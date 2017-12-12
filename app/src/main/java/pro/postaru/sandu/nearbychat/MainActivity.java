@@ -1,6 +1,7 @@
 package pro.postaru.sandu.nearbychat;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -23,7 +24,6 @@ import pro.postaru.sandu.nearbychat.adapters.MainFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.fragments.LoginFragment;
 import pro.postaru.sandu.nearbychat.fragments.RegisterFragment;
-import pro.postaru.sandu.nearbychat.models.OnlineUser;
 import pro.postaru.sandu.nearbychat.models.UserConversations;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity
                         Log.d("BB", "signInWithEmail:success");
                         user = auth.getCurrentUser();
 
-                        registerOnlineUser();
                         mountOnlineActivity();
 
                         Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
@@ -110,6 +109,11 @@ public class MainActivity extends AppCompatActivity
                 });
     }
 
+    private void initProfileImage() {
+        Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8);
+        DatabaseUtils.saveProfilePicture(bitmap, null, null);
+    }
+
     @Override
     public void requestRegister(String username, String email, String password) {
 
@@ -122,9 +126,8 @@ public class MainActivity extends AppCompatActivity
                         Log.d("NN", "createUserWithEmail:success");
                         user = auth.getCurrentUser();
                         Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
-
+                        initProfileImage();
                         createUserConversationEntry();
-                        registerOnlineUser();
                         mountOnlineActivity();
 
                     } else {
@@ -138,13 +141,6 @@ public class MainActivity extends AppCompatActivity
                 });
     }
 
-    public void registerOnlineUser() {
-        OnlineUser onlineUser = new OnlineUser(user.getUid());
-
-        database.child(Database.onlineUsers)
-                .child(user.getUid())
-                .setValue(onlineUser);
-    }
 
     public void mountOnlineActivity() {
         Intent intent = new Intent(this, OnlineActivity.class);

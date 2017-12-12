@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/nearby-chat.iml" filepath="$PROJECT_DIR$/nearby-chat.iml" />
+      <module fileurl="file://C:\Users\ismael\StudioProjects\nearby-chat\.idea\nearby-chat-revamped.iml" filepath="C:\Users\ismael\StudioProjects\nearby-chat\.idea\nearby-chat-revamped.iml" />
     </modules>
   </component>
 </project>
