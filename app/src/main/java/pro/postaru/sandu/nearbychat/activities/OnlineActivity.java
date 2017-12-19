@@ -118,10 +118,12 @@ public class OnlineActivity extends AppCompatActivity
         setContentView(R.layout.activity_online);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_main);
+        setSupportActionBar(toolbar);
+
         AppBarLayout.LayoutParams toolParams = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
 
         toolParams.setScrollFlags(0);
-        toolbar.setLayoutParams(toolParams);
+        setSupportActionBar(toolbar);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
