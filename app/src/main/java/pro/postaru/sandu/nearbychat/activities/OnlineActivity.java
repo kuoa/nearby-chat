@@ -11,6 +11,7 @@ import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
@@ -117,7 +118,10 @@ public class OnlineActivity extends AppCompatActivity
         setContentView(R.layout.activity_online);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_main);
-        setSupportActionBar(toolbar);
+        AppBarLayout.LayoutParams toolParams = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
+
+        toolParams.setScrollFlags(0);
+        toolbar.setLayoutParams(toolParams);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -221,6 +225,7 @@ public class OnlineActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        Log.w("MENU", "OPTIONS");
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }

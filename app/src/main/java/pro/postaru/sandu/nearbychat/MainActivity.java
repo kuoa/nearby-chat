@@ -3,6 +3,7 @@ package pro.postaru.sandu.nearbychat;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -49,6 +50,11 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar_main);
         setSupportActionBar(toolbar);
+
+        AppBarLayout.LayoutParams toolParams = (AppBarLayout.LayoutParams) toolbar.getLayoutParams();
+
+        toolParams.setScrollFlags(0);
+        toolbar.setLayoutParams(toolParams);
 
         mainFragmentPagerAdapter = new MainFragmentPagerAdapter(getSupportFragmentManager());
 
