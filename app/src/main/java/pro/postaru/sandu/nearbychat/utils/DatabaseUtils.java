@@ -108,6 +108,7 @@ public class DatabaseUtils {
     }
 
     public static void loadProfileImage(String id, OnSuccessListener<byte[]> onSuccessListener, OnFailureListener onFailureListener) {
+        //todo change lsitener typr
         loadImage(getProfileStorageReferenceForId(id), onSuccessListener, onFailureListener);
     }
 

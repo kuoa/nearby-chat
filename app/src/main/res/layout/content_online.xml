@@ -51,6 +51,12 @@
                     android:layout_height="wrap_content">
 
                     <android.support.design.widget.TabItem
+                        android:id="@+id/tab_list"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/tab_list" />
+
+                    <android.support.design.widget.TabItem
                         android:id="@+id/tab_map"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

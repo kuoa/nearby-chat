@@ -189,7 +189,6 @@ public class MapViewFragment extends Fragment {
         return fragment;
     }
 
-    ;
 
     private void updateQuery(GeoLocation myLocation) {
         if (geoQuery == null) {

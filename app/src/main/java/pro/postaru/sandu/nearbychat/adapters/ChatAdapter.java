@@ -45,7 +45,6 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         user = FirebaseAuth.getInstance().getCurrentUser();
     }
 
-
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 

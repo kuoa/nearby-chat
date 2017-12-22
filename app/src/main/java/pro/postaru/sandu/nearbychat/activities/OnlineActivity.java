@@ -69,7 +69,8 @@ import static pro.postaru.sandu.nearbychat.constants.Constant.LOCATION_SERVICES;
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnlineUsersAdapter.OnAdapterInteractionListener,
-        ActiveConversationsAdapter.OnAdapterInteractionListener, MapViewFragment.OnFragmentInteractionListener {
+        ActiveConversationsAdapter.OnAdapterInteractionListener,
+        MapViewFragment.OnFragmentInteractionListener {
 
     public static final int INTERVAL = 60000;
     private UserProfile userProfile;
