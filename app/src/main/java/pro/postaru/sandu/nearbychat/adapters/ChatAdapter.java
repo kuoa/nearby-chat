@@ -46,6 +46,16 @@ public class ChatAdapter extends ArrayAdapter<Message> {
     }
 
     @Override
+    public long getItemId(int position) {
+        return messages.get(position).getId().hashCode();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return getItem(position).getType().ordinal();
+    }
+
+    @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
         if (convertView == null) {

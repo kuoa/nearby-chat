@@ -106,7 +106,6 @@ public class ConversationsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         conversationProfiles = new ArrayList<>();
 
         mainProgresBar = (ProgressBar) getActivity().findViewById(R.id.online_spinner);

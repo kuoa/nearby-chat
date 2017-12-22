@@ -236,13 +236,11 @@ public class MapViewFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        stringMarkerMap = Collections.synchronizedMap(new HashMap<>());
 
+        stringMarkerMap = Collections.synchronizedMap(new HashMap<>());
 
         geoFire = DatabaseUtils.getNewLocationDatabase();
         userId = DatabaseUtils.getCurrentUUID();
-
-
     }
 
     @Override
