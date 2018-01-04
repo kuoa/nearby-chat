@@ -21,6 +21,7 @@ import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.adapters.ActiveConversationsAdapter;
+import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.models.Conversation;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
@@ -42,19 +43,27 @@ public class ConversationsFragment extends Fragment {
 
             if (userProfile != null) {
                 activeConversationsAdapter.add(userProfile);
-                DatabaseUtils.loadProfileImage(userProfile.getId(), result -> {
-                    Bitmap avatar = BitmapFactory.decodeByteArray(result, 0, result.length);
+                DatabaseUtils.loadProfileImage(userProfile.getId(), (Object o) -> {
+                    Bitmap avatar = null;
+                    if (o instanceof byte[]) {
+                        byte[] bytes = (byte[]) o;
+                        avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    }
+
+                    if (o instanceof Bitmap) {
+                        avatar = (Bitmap) o;
+                    }
                     userProfile.setAvatar(avatar);
                     activeConversationsAdapter.notifyDataSetChanged();
 
                 }, null);
-                Log.w("BBB", "id " + userProfile.getId());
+                Log.w(Constant.NEARBY_CHAT, "id " + userProfile.getId());
             }
         }
 
         @Override
         public void onCancelled(DatabaseError databaseError) {
-            Log.w("BBB", "Canceled profile request");
+            Log.w(Constant.NEARBY_CHAT, "Canceled profile request");
 
         }
     };
@@ -69,7 +78,7 @@ public class ConversationsFragment extends Fragment {
                 DatabaseUtils.getUserProfileReferenceById(conversation.getPartnerId())
                         .addListenerForSingleValueEvent(getUserProfileListener);
             } else {
-                Log.w("BBB", "No conversations");
+                Log.w(Constant.NEARBY_CHAT, "No conversations");
             }
         }
 
@@ -89,7 +98,7 @@ public class ConversationsFragment extends Fragment {
 
         @Override
         public void onCancelled(DatabaseError databaseError) {
-            Log.w("BBB", "loadPost:onCancelled", databaseError.toException());
+            Log.w(Constant.NEARBY_CHAT, "loadPost:onCancelled", databaseError.toException());
         }
     };
 

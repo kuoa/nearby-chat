@@ -66,6 +66,7 @@ import pro.postaru.sandu.nearbychat.utils.Network;
 
 import static pro.postaru.sandu.nearbychat.constants.Constant.FIREBASE_STORAGE_REFERENCE;
 import static pro.postaru.sandu.nearbychat.constants.Constant.LOCATION_SERVICES;
+import static pro.postaru.sandu.nearbychat.constants.Constant.NEARBY_CHAT;
 
 public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -82,22 +83,22 @@ public class OnlineActivity extends AppCompatActivity
     private final ValueEventListener userProfileListener = new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-            Log.d(Constant.NEARBY_CHAT, "onDataChange: dataSnapshot = [" + dataSnapshot + "]");
+            Log.d(NEARBY_CHAT, "onDataChange: dataSnapshot = [" + dataSnapshot + "]");
             UserProfile userProfileLocal = dataSnapshot.getValue(UserProfile.class);
 
             if (userProfileLocal != null) {
                 userProfile = userProfileLocal;
-                Log.w(Constant.NEARBY_CHAT, "Online profile loaded for id " + OnlineActivity.this.userId);
+                Log.w(NEARBY_CHAT, "Online profile loaded for id " + OnlineActivity.this.userId);
 
                 initProfileView(drawer);
             } else {
-                Log.w(Constant.NEARBY_CHAT, "Error while loading the online sharedPreferences");
+                Log.w(NEARBY_CHAT, "Error while loading the online sharedPreferences");
             }
         }
 
         @Override
         public void onCancelled(DatabaseError databaseError) {
-            Log.w(Constant.NEARBY_CHAT, "Error database");
+            Log.w(NEARBY_CHAT, "Error database");
         }
     };
     private ProgressBar progressBar;
@@ -177,7 +178,7 @@ public class OnlineActivity extends AppCompatActivity
     // activity logic
 
     public void requestLogout() {
-        Log.d("BB", "logout:success");
+        Log.d(NEARBY_CHAT, "logout:success");
         //remove last location from geofire
         DatabaseUtils.getNewLocationDatabase().removeLocation(userId);
 
@@ -228,7 +229,7 @@ public class OnlineActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        Log.w("MENU", "OPTIONS");
+        Log.w(Constant.NEARBY_CHAT, "OPTIONS");
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
@@ -286,7 +287,7 @@ public class OnlineActivity extends AppCompatActivity
      * Async task
      */
     private void loadProfileOnline() {
-        Log.d(Constant.NEARBY_CHAT, "Load profile online and add listener for id " + firebaseUser.getUid());
+        Log.d(NEARBY_CHAT, "Load profile online and add listener for id " + firebaseUser.getUid());
         database.child(Database.userProfiles).child(firebaseUser.getUid()).addListenerForSingleValueEvent(userProfileListener);
         loadProfileImage();
 
@@ -323,7 +324,7 @@ public class OnlineActivity extends AppCompatActivity
             drawerUserAvatarView.setImageBitmap(avatar);
         }).addOnFailureListener(exception -> {
             // Handle any errors
-            Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
+            Log.w(NEARBY_CHAT, "loadProfileImage: ", exception);
         });
     }
 

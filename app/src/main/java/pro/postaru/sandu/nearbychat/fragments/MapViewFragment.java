@@ -120,8 +120,17 @@ public class MapViewFragment extends Fragment {
                 }
             });
 
-            DatabaseUtils.loadProfileImage(key, bytes -> {
-                Bitmap avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            DatabaseUtils.loadProfileImage(key, (Object o) -> {
+                Bitmap avatar = null;
+                if (o instanceof byte[]) {
+                    byte[] bytes = (byte[]) o;
+                    avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                }
+
+                if (o instanceof Bitmap) {
+                    avatar = (Bitmap) o;
+                }
+
                 if (avatar != null) {
                     Bitmap resizedBitmap = Bitmap.createScaledBitmap(avatar, imageSize, imageSize, false);
                     if (resizedBitmap != null) {

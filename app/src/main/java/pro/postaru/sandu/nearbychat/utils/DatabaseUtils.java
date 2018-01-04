@@ -107,19 +107,16 @@ public class DatabaseUtils {
         });
     }
 
-    public static void loadProfileImage(String id, OnSuccessListener<byte[]> onSuccessListener, OnFailureListener onFailureListener) {
-        //todo change lsitener typr
+    public static void loadProfileImage(String id, OnSuccessListener<Object> onSuccessListener, OnFailureListener onFailureListener) {
         loadImage(getProfileStorageReferenceForId(id), onSuccessListener, onFailureListener);
     }
 
-    public static void loadImage(StorageReference storageReference, OnSuccessListener<byte[]> onSuccessListener, OnFailureListener onFailureListener) {
+    public static void loadImage(StorageReference storageReference, OnSuccessListener<Object> onSuccessListener, OnFailureListener onFailureListener) {
         Bitmap bitmapFromMemCache = CacheUtils.getBitmapFromMemCache(storageReference.getPath());
         if (bitmapFromMemCache != null) {
             //cache work
             Log.d(Constant.CACHE_UTILS, "loadImage: ok");
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmapFromMemCache.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            onSuccessListener.onSuccess(stream.toByteArray());
+            onSuccessListener.onSuccess(bitmapFromMemCache);
         } else {
             try {
 

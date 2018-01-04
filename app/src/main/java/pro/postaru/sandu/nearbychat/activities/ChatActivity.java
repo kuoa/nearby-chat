@@ -44,6 +44,7 @@ import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.adapters.ChatAdapter;
+import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.models.Message;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
@@ -67,12 +68,6 @@ public class ChatActivity extends AppCompatActivity {
 
     private EditText messageEditView;
     private ImageButton messageSendButton;
-
-    private String imagePath;
-    private String imageUrl;
-    private Uri imageUri;
-    private Bitmap resizedImage;
-
     private final TextWatcher editMessageTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -94,6 +89,10 @@ public class ChatActivity extends AppCompatActivity {
 
         }
     };
+    private String imagePath;
+    private String imageUrl;
+    private Uri imageUri;
+    private Bitmap resizedImage;
     private ImageButton messageAtachImageButton;
     private ListView messageListView;
     private ProgressBar progressBar;
@@ -108,7 +107,7 @@ public class ChatActivity extends AppCompatActivity {
                 chatAdapter.add(message);
                 messageListView.setSelection(messages.size() - 1);
             } else {
-                Log.w("BBB", "No messages");
+                Log.w(Constant.NEARBY_CHAT, "No messages");
             }
 
             if (progressBar.getVisibility() == View.VISIBLE) {
@@ -132,7 +131,7 @@ public class ChatActivity extends AppCompatActivity {
 
         @Override
         public void onCancelled(DatabaseError databaseError) {
-            Log.w("BBB", "loadPost:onCancelled", databaseError.toException());
+            Log.w(Constant.NEARBY_CHAT, "loadPost:onCancelled", databaseError.toException());
         }
     };
 
@@ -220,7 +219,7 @@ public class ChatActivity extends AppCompatActivity {
 
         StorageReference storageReference = DatabaseUtils.getStorageDatabase().getReference(imagePath);
         DatabaseUtils.savePictureOnline(image, storageReference, taskSnapshot -> {
-            Log.w("BBB", "Image uploaded, now sending message");
+            Log.w(Constant.NEARBY_CHAT, "Image uploaded, now sending message");
             // send a image message
             storageReference.getDownloadUrl().addOnSuccessListener(e -> {
                 imageUrl = e.toString();
@@ -228,7 +227,7 @@ public class ChatActivity extends AppCompatActivity {
             });
 
         }, e -> {
-            Log.w("BBB", e.getMessage());
+            Log.w(Constant.NEARBY_CHAT, e.getMessage());
         });
     }
 
@@ -410,11 +409,11 @@ public class ChatActivity extends AppCompatActivity {
             ratio = 1;
         } else {
             ratio = (1024 / max) - 0.05f;
-            Log.w("Resize", ratio + "");
+            Log.w(Constant.NEARBY_CHAT, ratio + "");
         }
 
-        Log.w("RESIZE", width * ratio + "");
-        Log.w("RESIZE", height * ratio + "");
+        Log.w(Constant.NEARBY_CHAT, width * ratio + "");
+        Log.w(Constant.NEARBY_CHAT, height * ratio + "");
 
         return Bitmap.createScaledBitmap(myBitmap, (int) (width * ratio),
                 (int) (height * ratio), true);

@@ -296,13 +296,24 @@ public class ProfileActivity extends AppCompatActivity {
 
         userProfileDatabaseReference.addListenerForSingleValueEvent(userProfileListener);
 
-        DatabaseUtils.loadProfileImage(userId, bytes -> {
-            Bitmap avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            userProfile.setAvatar(avatar);
-            profileImage.setImageBitmap(avatar);
+        DatabaseUtils.loadProfileImage(userId, (Object o) -> {
+            Bitmap avatar = null;
+            if (o instanceof byte[]) {
+                byte[] bytes = (byte[]) o;
+                avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            }
 
-            profileImage.setVisibility(View.VISIBLE);
-            profileImageIcon.setVisibility(View.VISIBLE);
+            if (o instanceof Bitmap) {
+                avatar = (Bitmap) o;
+            }
+
+            if (avatar != null) {
+                userProfile.setAvatar(avatar);
+                profileImage.setImageBitmap(avatar);
+
+                profileImage.setVisibility(View.VISIBLE);
+                profileImageIcon.setVisibility(View.VISIBLE);
+            }
         }, null);
     }
 

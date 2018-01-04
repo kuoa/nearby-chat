@@ -22,6 +22,7 @@ import java.util.HashMap;
 
 import pro.postaru.sandu.nearbychat.activities.OnlineActivity;
 import pro.postaru.sandu.nearbychat.adapters.MainFragmentPagerAdapter;
+import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.fragments.LoginFragment;
 import pro.postaru.sandu.nearbychat.fragments.RegisterFragment;
@@ -98,15 +99,15 @@ public class MainActivity extends AppCompatActivity
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
-                        Log.d("BB", "signInWithEmail:success");
+                        Log.d(Constant.NEARBY_CHAT, "signInWithEmail:success");
                         user = auth.getCurrentUser();
 
                         mountOnlineActivity();
 
-                        Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
+                        Log.d(Constant.NEARBY_CHAT, user.getEmail() != null ? user.getEmail() : "EMPTY");
                     } else {
                         // If sign in fails, display a message to the user.
-                        Log.w("BB", "signInWithEmail:failure", task.getException());
+                        Log.w(Constant.NEARBY_CHAT, "signInWithEmail:failure", task.getException());
                         Toast.makeText(MainActivity.this, "Authentication failed.",
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -129,16 +130,16 @@ public class MainActivity extends AppCompatActivity
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         // Sign in success, update UI with the signed-in user's information
-                        Log.d("NN", "createUserWithEmail:success");
+                        Log.d(Constant.NEARBY_CHAT, "createUserWithEmail:success");
                         user = auth.getCurrentUser();
-                        Log.d("NN", user.getEmail() != null ? user.getEmail() : "EMPTY");
+                        Log.d(Constant.NEARBY_CHAT, user.getEmail() != null ? user.getEmail() : "EMPTY");
                         initProfileImage();
                         createUserConversationEntry();
                         mountOnlineActivity();
 
                     } else {
                         // If sign in fails, display a message to the user.
-                        Log.w("NN", "createUserWithEmail:failure", task.getException());
+                        Log.w(Constant.NEARBY_CHAT, "createUserWithEmail:failure", task.getException());
                         Toast.makeText(MainActivity.this, "Authentication failed.",
                                 Toast.LENGTH_SHORT).show();
                     }
