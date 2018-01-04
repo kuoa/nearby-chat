@@ -89,9 +89,18 @@ public class ChatAdapter extends ArrayAdapter<Message> {
                     .getReferenceFromUrl(imageUrl);
 
             DatabaseUtils.loadImage(storageReference,
-                    bytes -> {
-                        Bitmap image = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                        imageView.setImageBitmap(image);
+                    (Object o) -> {
+                        Bitmap avatar = null;
+                        if (o instanceof byte[]) {
+                            byte[] bytes = (byte[]) o;
+                            avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        }
+
+                        if (o instanceof Bitmap) {
+                            avatar = (Bitmap) o;
+                        }
+
+                        imageView.setImageBitmap(avatar);
 
                         imageView.setVisibility(View.VISIBLE);
                         messageView.setVisibility(View.GONE);
