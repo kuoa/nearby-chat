@@ -207,11 +207,11 @@ public class DatabaseUtils {
 
             }).addOnFailureListener(exception -> {
                 // Handle any errors
-                Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
-                Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
+                Log.d(Constant.NEARBY_CHAT, "loadRecord() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+                Log.w(Constant.NEARBY_CHAT, "loadRecord: ", exception);
             });
         } catch (RuntimeException e) {
-            Log.w(Constant.NEARBY_CHAT, "loadImage: ", e);
+            Log.w(Constant.NEARBY_CHAT, "loadRecord: ", e);
         }
     }
 
