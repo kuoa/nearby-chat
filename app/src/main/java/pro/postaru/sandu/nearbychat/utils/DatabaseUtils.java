@@ -19,6 +19,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
@@ -107,6 +108,7 @@ public class DatabaseUtils {
         });
     }
 
+
     public static void loadProfileImage(String id, OnSuccessListener<Object> onSuccessListener, OnFailureListener onFailureListener) {
         loadImage(getProfileStorageReferenceForId(id), onSuccessListener, onFailureListener);
     }
@@ -151,6 +153,68 @@ public class DatabaseUtils {
             }
         }
     }
+
+    /**
+     * Store the provided audio record online and call the listener when it's done
+     * The listeners are optional
+     *
+     * @param audioPath         the audio path
+     * @param reference         the storage reference for the image
+     * @param onSuccessListener listener when the upload is ok
+     * @param onFailureListener listener when the upload is ko
+     */
+    public static void saveRecordOnline(String audioPath, StorageReference reference, OnSuccessListener<UploadTask.TaskSnapshot> onSuccessListener, OnFailureListener onFailureListener) {
+
+        Uri audioUri = Uri.fromFile(new File(audioPath));
+        UploadTask uploadTask = reference.putFile(audioUri);
+
+        if (onSuccessListener != null) {
+            uploadTask.addOnSuccessListener(onSuccessListener);
+        }
+        if (onFailureListener != null) {
+            uploadTask.addOnFailureListener(onFailureListener);
+        }
+
+        //debug listeners
+        uploadTask.addOnFailureListener(exception -> {
+            // Handle unsuccessful uploads
+            Log.w(Constant.NEARBY_CHAT, "save audio online: ko ", exception);
+        }).addOnSuccessListener(taskSnapshot -> {
+            Log.d(Constant.NEARBY_CHAT, "save audio: ok");
+            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+            Uri downloadUrl = taskSnapshot.getDownloadUrl();
+            Log.d(Constant.NEARBY_CHAT, "save audio online : uri= " + downloadUrl);
+        });
+    }
+
+
+    public static void loadRecord(StorageReference storageReference, OnSuccessListener<Object> onSuccessListener, OnFailureListener onFailureListener) {
+
+        try {
+            final long ONE_MEGABYTE = 1024 * 1024;
+
+            Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE); //async storage exception when the image doesn't exist
+
+            if (onSuccessListener != null) {
+                task.addOnSuccessListener(onSuccessListener);
+            }
+            if (onFailureListener != null) {
+                task.addOnFailureListener(onFailureListener);
+            }
+            //debug listeners
+            task.addOnSuccessListener(bytes -> {
+                Log.d(Constant.NEARBY_CHAT, "loadRecord() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+
+            }).addOnFailureListener(exception -> {
+                // Handle any errors
+                Log.d(Constant.NEARBY_CHAT, "loadImage() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+                Log.w(Constant.NEARBY_CHAT, "loadProfileImage: ", exception);
+            });
+        } catch (RuntimeException e) {
+            Log.w(Constant.NEARBY_CHAT, "loadImage: ", e);
+        }
+    }
+
 
     public static DatabaseReference getUserProfileReferenceById(String userId) {
         return getCurrentDatabaseReference().child(Database.userProfiles).child(userId);

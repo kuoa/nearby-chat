@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -11,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -19,25 +22,35 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.models.Message;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
+import pro.postaru.sandu.nearbychat.utils.SoundUtils;
 
 public class ChatAdapter extends ArrayAdapter<Message> {
-
 
     private final List<Message> messages;
 
     private FirebaseUser user;
 
-    public ChatAdapter(@NonNull Activity activity, List<Message> messages) {
-        super(activity,0, messages);
+    private Activity activity;
 
+    private MediaPlayer mediaPlayer;
+
+    public ChatAdapter(@NonNull Activity activity, List<Message> messages) {
+        super(activity, 0, messages);
+
+        this.activity = activity;
         this.messages = messages;
         user = FirebaseAuth.getInstance().getCurrentUser();
+        mediaPlayer = new MediaPlayer();
     }
 
     @Override
@@ -55,17 +68,15 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         return getItem(position).getType().ordinal();
     }
 
-    private View getInflatedLayoutForType(int type){
+    private View getInflatedLayoutForType(int type) {
 
-        if(type == Message.Type.TEXT.ordinal()){
+        if (type == Message.Type.TEXT.ordinal()) {
             return LayoutInflater.from(getContext()).inflate(R.layout.chat_entry_text, null);
-        }else if(type == Message.Type.IMAGE.ordinal()){
+        } else if (type == Message.Type.IMAGE.ordinal()) {
             return LayoutInflater.from(getContext()).inflate(R.layout.chat_entry_image, null);
-        }
-        else if(type == Message.Type.SOUND.ordinal()){
+        } else if (type == Message.Type.SOUND.ordinal()) {
             return LayoutInflater.from(getContext()).inflate(R.layout.chat_entry_sound, null);
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -84,7 +95,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         RelativeLayout.LayoutParams params = null;
         View abstractView = null;
 
-        // text
+        // Text
         if (message.getType() == Message.Type.TEXT) {
 
             String textContent = (String) message.getContent();
@@ -99,13 +110,12 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
             if (message.getSenderId().equals(user.getUid())) {
                 messageView.setTextColor(Color.BLACK);
-            }
-            else{
+            } else {
                 messageView.setTextColor(Color.WHITE);
             }
-        }
 
-        else if(message.getType() == Message.Type.IMAGE){
+            // Image
+        } else if (message.getType() == Message.Type.IMAGE) {
 
             String imageUrl = (String) message.getContent();
             ImageView imageView = (ImageView) convertView.findViewById(R.id.chat_image);
@@ -132,19 +142,64 @@ public class ChatAdapter extends ArrayAdapter<Message> {
                         }
 
                         imageView.setImageBitmap(avatar);
-
-                        imageView.setVisibility(View.VISIBLE);
                     },
                     null);
         }
-        //TODO
-        else if(message.getType() == Message.Type.SOUND){
 
-        }
-        else{
+        // Sound recording
+        else if (message.getType() == Message.Type.SOUND) {
+            String recordUrl = (String) message.getContent();
+            ImageButton button = (ImageButton) convertView.findViewById(R.id.chat_audio);
+            abstractView = button;
+
+            params = (RelativeLayout.LayoutParams) button.getLayoutParams();
+
+            button.setPadding(20, 10, 20, 10);
+
+            StorageReference storageReference = DatabaseUtils.getStorageDatabase()
+                    .getReferenceFromUrl(recordUrl);
+
+            DatabaseUtils.loadRecord(storageReference,
+                    (Object o) -> {
+                        if (o instanceof byte[]) {
+                            byte[] bytes = (byte[]) o;
+                            try {
+                                FileInputStream audioRecordInputStream = SoundUtils.decodeByteArray(bytes, activity);
+                                button.setOnClickListener(v -> {
+                                    if(!mediaPlayer.isPlaying()) {
+                                        try {
+                                            button.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_stop_black_24px));
+
+                                            mediaPlayer.reset();
+                                            mediaPlayer.setDataSource(audioRecordInputStream.getFD());
+
+                                            mediaPlayer.prepare();
+                                            mediaPlayer.start();
+
+                                            mediaPlayer.setOnCompletionListener(mp -> {
+                                                button.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_play_arrow_black_24px));
+                                            });
+
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    else{
+                                        button.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_play_arrow_black_24px));
+                                        mediaPlayer.stop();
+                                    }
+                                });
+
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    },
+                    null);
+
+        } else {
             Log.w(Constant.NEARBY_CHAT, "Wrong type of message");
         }
-
 
         // custom style for a message sent by me
         if (message.getSenderId().equals(user.getUid())) {

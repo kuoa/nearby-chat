@@ -4,16 +4,15 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.Image;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -39,7 +38,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -49,6 +47,7 @@ import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.models.Message;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
+import pro.postaru.sandu.nearbychat.utils.FileUtils;
 import pro.postaru.sandu.nearbychat.utils.ImageUtils;
 import pro.postaru.sandu.nearbychat.utils.PermissionUtils;
 
@@ -59,9 +58,11 @@ public class ChatActivity extends AppCompatActivity {
 
     private static final int CAMERA = 1;
     private static final int GALLERY = 2;
+    private static final int RECORD_AUDIO = 3;
 
     private static final String[] WRITE_EXTERNAL_PERMISSION = new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
     private static final String[] CAMERA_PERMISSION = new String[]{Manifest.permission.CAMERA};
+    private static final String[] RECORD_AUDIO_PERMISSION = new String[]{Manifest.permission.RECORD_AUDIO};
 
     private String conversationId;
 
@@ -71,6 +72,27 @@ public class ChatActivity extends AppCompatActivity {
 
     private EditText messageEditView;
     private ImageButton messageSendButton;
+
+    private String imagePath;
+    private String imageUrl;
+    private Uri imageUri;
+    private Bitmap resizedImage;
+
+    private ImageButton messageAtachImageButton;
+    private ListView messageListView;
+
+    private ProgressBar progressBar;
+
+    private UserProfile conversationPartner;
+
+    private ImageButton messageRecordButton;
+    private MediaRecorder mediaRecorder;
+
+    private boolean recording;
+    private String recordPath;
+    private String recordUrl;
+
+
     private final TextWatcher editMessageTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -92,13 +114,6 @@ public class ChatActivity extends AppCompatActivity {
 
         }
     };
-    private String imagePath;
-    private String imageUrl;
-    private Uri imageUri;
-    private Bitmap resizedImage;
-    private ImageButton messageAtachImageButton;
-    private ListView messageListView;
-    private ProgressBar progressBar;
 
     private final ChildEventListener messageListener = new ChildEventListener() {
         @Override
@@ -138,9 +153,6 @@ public class ChatActivity extends AppCompatActivity {
         }
     };
 
-    private UserProfile conversationPartner;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -162,6 +174,10 @@ public class ChatActivity extends AppCompatActivity {
         messageAtachImageButton = (ImageButton) findViewById(R.id.message_attach_image);
         messageAtachImageButton.setOnClickListener(v -> showImageAttachementDialog());
 
+        recording = false;
+        messageRecordButton = (ImageButton) findViewById(R.id.message_record_audio);
+        messageRecordButton.setOnClickListener(v -> voiceRecordingAction());
+
         messages = new ArrayList<>();
 
         conversationId = getConversationId(conversationPartner.getId());
@@ -182,12 +198,18 @@ public class ChatActivity extends AppCompatActivity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 
+    private void initializeMediaRecord(){
+        mediaRecorder = new MediaRecorder();
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mediaRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
+    }
 
     private void sendMessage() {
         Message newMessage = new Message();
 
         // text message
-        if (imageUrl == null) {
+        if (imageUrl == null && recordUrl == null) {
 
             String textContent = messageEditView.getText().toString();
             newMessage.setType(Message.Type.TEXT);
@@ -196,12 +218,21 @@ public class ChatActivity extends AppCompatActivity {
             messageEditView.setText("");
         }
         // image message
-        else {
+        else if(imageUrl != null) {
 
             newMessage.setType(Message.Type.IMAGE);
             newMessage.setContent(imageUrl);
 
             imageUrl = null;
+        }
+        else if(recordUrl != null){
+            newMessage.setType(Message.Type.SOUND);
+            newMessage.setContent(recordUrl);
+
+            recordUrl = null;
+        }
+        else{
+            Log.e(Constant.NEARBY_CHAT, "Unknow message type");
         }
 
         newMessage.setDate(new Date());
@@ -234,6 +265,19 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    private void sendRecord(){
+        StorageReference storageReference = DatabaseUtils.getStorageDatabase().getReference(recordPath);
+        DatabaseUtils.saveRecordOnline(recordPath, storageReference, taskSnapshot -> {
+            storageReference.getDownloadUrl().addOnSuccessListener(e -> {
+                recordUrl = e.toString();
+                sendMessage();
+            });
+        }, e -> {
+            Log.w(Constant.NEARBY_CHAT, e.getMessage());
+        });
+
+    }
+
     private void showImageAttachementDialog() {
         AlertDialog.Builder pictureDialog = new AlertDialog.Builder(this);
         pictureDialog.setTitle("Select Action");
@@ -259,7 +303,7 @@ public class ChatActivity extends AppCompatActivity {
         boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
         if (isAndroidVersionNew) {
             if (!PermissionUtils.hasWritePermission(this)) {
-                ActivityCompat.requestPermissions(this, WRITE_EXTERNAL_PERMISSION, 1);
+                ActivityCompat.requestPermissions(this, WRITE_EXTERNAL_PERMISSION, GALLERY);
             }
         }
 
@@ -277,18 +321,75 @@ public class ChatActivity extends AppCompatActivity {
         boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
         if (isAndroidVersionNew) {
             if (!PermissionUtils.hasCameraPermission(this)) {
-                ActivityCompat.requestPermissions(this, new String[]{CAMERA_PERMISSION[0], WRITE_EXTERNAL_PERMISSION[0]}, 1);
+                ActivityCompat.requestPermissions(this, new String[]{CAMERA_PERMISSION[0], WRITE_EXTERNAL_PERMISSION[0]}, CAMERA);
             }
         }
 
-        if (!isAndroidVersionNew || PermissionUtils.hasCameraPermission(this)) {
+        if (!isAndroidVersionNew || PermissionUtils.hasCameraPermission(this) ||
+                PermissionUtils.hasWritePermission(this)) {
             Intent takePhotoIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
-            imageUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".my.package.name.provider", ImageUtils.createImageFile());
+            imageUri = FileProvider.getUriForFile(this,
+                    getApplicationContext().getPackageName() + ".my.package.name.provider",
+                    FileUtils.createFileWithExtension("jpg"));
 
             takePhotoIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
             startActivityForResult(takePhotoIntent, CAMERA);
+        }
+    }
+
+    private void voiceRecordingAction(){
+
+        boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
+        if (isAndroidVersionNew) {
+            if (!PermissionUtils.hasAudioRecordPermission(this)) {
+                ActivityCompat.requestPermissions(this, new String[]{WRITE_EXTERNAL_PERMISSION[0], RECORD_AUDIO_PERMISSION[0]}, RECORD_AUDIO);
+            }
+        }
+
+        if (!isAndroidVersionNew || PermissionUtils.hasAudioRecordPermission(this)
+                || PermissionUtils.hasWritePermission(this)) {
+
+            if(!recording){
+                Toast.makeText(ChatActivity.this, "Started voice recording", Toast.LENGTH_SHORT).show();
+                messageRecordButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_stop_black_24px));
+
+                initializeMediaRecord();
+                startRecordingAudio();
+            }
+            else{
+                Toast.makeText(ChatActivity.this, "Stopped voice recording", Toast.LENGTH_SHORT).show();
+
+                messageRecordButton.setImageDrawable(getResources().getDrawable(R.drawable.ic_keyboard_voice_black_24px));
+                stopRecordingAudio();
+                sendRecord();
+            }
+            recording = !recording;
+        }
+    }
+
+    private void startRecordingAudio(){
+        File audioFile = FileUtils.createFileWithExtension("3gpp");
+        recordUrl = null;
+        recordPath = audioFile.getAbsolutePath();
+        mediaRecorder.setOutputFile(recordPath);
+
+        try {
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopRecordingAudio(){
+
+        if(mediaRecorder != null){
+            mediaRecorder.stop();
+            mediaRecorder.release();
+
+            mediaRecorder = null;
         }
     }
 
@@ -332,7 +433,6 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -358,12 +458,25 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 break;
             }
+
+            case RECORD_AUDIO: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    voiceRecordingAction();
+                } else {
+                    Toast.makeText(this, "RECORD AUDIO DENIED", Toast.LENGTH_LONG).show();
+                }
+                break;
+            }
+
+
         }
     }
 
     public String saveImage(Bitmap myBitmap) {
 
-        File file = ImageUtils.createImageFile();
+        File file = FileUtils.createFileWithExtension("jpg");
         resizedImage = ImageUtils.resizeImage(myBitmap);
         ByteArrayOutputStream bytes = ImageUtils.compressImage(resizedImage);
 

@@ -118,7 +118,10 @@ public class ConversationsFragment extends Fragment {
         conversationProfiles = new ArrayList<>();
 
         mainProgresBar = (ProgressBar) getActivity().findViewById(R.id.online_spinner);
-        mainProgresBar.setVisibility(View.VISIBLE);
+        if(mainProgresBar != null){
+            mainProgresBar.setVisibility(View.VISIBLE);
+        }
+
         DatabaseUtils.getConversationsReferenceById(DatabaseUtils.getCurrentUUID()).addChildEventListener(userConversationsListener);
     }
 

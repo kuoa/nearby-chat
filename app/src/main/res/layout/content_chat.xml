@@ -26,13 +26,19 @@
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin">
 
+        <ImageButton
+            android:id="@+id/message_record_audio"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            app:srcCompat="@drawable/ic_keyboard_voice_black_24px" />
 
         <ImageButton
             android:id="@+id/message_attach_image"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:background="@android:color/transparent"
-            app:srcCompat="@drawable/ic_attachment_black_24px" />
+            app:srcCompat="@drawable/ic_insert_photo_black_24px" />
 
         <EditText
             android:id="@+id/message_edit"
