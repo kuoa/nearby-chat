@@ -14,7 +14,8 @@ public class SoundUtils {
         File tempAudioFile =
                 null;
         try {
-            tempAudioFile = File.createTempFile("cat_destroyer_69_if_you_know_what_i_mean", "3gpp",  activity.getCacheDir());
+            //list of cached temp file
+            tempAudioFile = File.createTempFile("cat_destroyer_69_if_you_know_what_i_mean", "3gpp", activity.getCacheDir());
             FileOutputStream fos = new FileOutputStream(tempAudioFile);
             fos.write(bytes);
             fos.close();

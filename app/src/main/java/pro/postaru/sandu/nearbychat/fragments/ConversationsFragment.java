@@ -1,7 +1,5 @@
 package pro.postaru.sandu.nearbychat.fragments;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -43,17 +41,8 @@ public class ConversationsFragment extends Fragment {
 
             if (userProfile != null) {
                 activeConversationsAdapter.add(userProfile);
-                DatabaseUtils.loadProfileImage(userProfile.getId(), (Object o) -> {
-                    Bitmap avatar = null;
-                    if (o instanceof byte[]) {
-                        byte[] bytes = (byte[]) o;
-                        avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    }
-
-                    if (o instanceof Bitmap) {
-                        avatar = (Bitmap) o;
-                    }
-                    userProfile.setAvatar(avatar);
+                DatabaseUtils.loadProfileImage(userProfile.getId(), bitmap -> {
+                    userProfile.setAvatar(bitmap);
                     activeConversationsAdapter.notifyDataSetChanged();
 
                 }, null);
@@ -118,7 +107,7 @@ public class ConversationsFragment extends Fragment {
         conversationProfiles = new ArrayList<>();
 
         mainProgresBar = (ProgressBar) getActivity().findViewById(R.id.online_spinner);
-        if(mainProgresBar != null){
+        if (mainProgresBar != null) {
             mainProgresBar.setVisibility(View.VISIBLE);
         }
 

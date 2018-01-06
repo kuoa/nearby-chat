@@ -59,7 +59,7 @@ import pro.postaru.sandu.nearbychat.adapters.OnlineFragmentPagerAdapter;
 import pro.postaru.sandu.nearbychat.adapters.OnlineUsersAdapter;
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
-import pro.postaru.sandu.nearbychat.fragments.MapViewFragment;
+import pro.postaru.sandu.nearbychat.fragments.MapFragment;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 import pro.postaru.sandu.nearbychat.utils.NetworkUtils;
@@ -72,7 +72,7 @@ public class OnlineActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnlineUsersAdapter.OnAdapterInteractionListener,
         ActiveConversationsAdapter.OnAdapterInteractionListener,
-        MapViewFragment.OnFragmentInteractionListener {
+        MapFragment.OnFragmentInteractionListener {
 
     public static final int INTERVAL = 60000;
     private UserProfile userProfile;

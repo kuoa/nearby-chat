@@ -4,7 +4,6 @@ package pro.postaru.sandu.nearbychat.fragments;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
@@ -49,7 +48,7 @@ import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
 
 import static pro.postaru.sandu.nearbychat.constants.Constant.LOCATION_SERVICES;
 
-public class MapViewFragment extends Fragment {
+public class MapFragment extends Fragment {
     public static final double RADIUS = 0.150;
     private final int imageSize = 120;
     private final GoogleMap.OnMarkerClickListener markerClickListener = marker -> {
@@ -120,19 +119,10 @@ public class MapViewFragment extends Fragment {
                 }
             });
 
-            DatabaseUtils.loadProfileImage(key, (Object o) -> {
-                Bitmap avatar = null;
-                if (o instanceof byte[]) {
-                    byte[] bytes = (byte[]) o;
-                    avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                }
-
-                if (o instanceof Bitmap) {
-                    avatar = (Bitmap) o;
-                }
-
-                if (avatar != null) {
-                    Bitmap resizedBitmap = Bitmap.createScaledBitmap(avatar, imageSize, imageSize, false);
+            DatabaseUtils.loadProfileImage(key, bitmap -> {
+                //resize here
+                if (bitmap != null) {
+                    Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, imageSize, imageSize, false);
                     if (resizedBitmap != null) {
                         marker.setIcon(BitmapDescriptorFactory.fromBitmap(resizedBitmap));
                     }
@@ -189,11 +179,11 @@ public class MapViewFragment extends Fragment {
         }
     };
 
-    public static MapViewFragment newInstance() {
+    public static MapFragment newInstance() {
 
         Bundle args = new Bundle();
 
-        MapViewFragment fragment = new MapViewFragment();
+        MapFragment fragment = new MapFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -336,8 +326,8 @@ public class MapViewFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof MapViewFragment.OnFragmentInteractionListener) {
-            activity = (MapViewFragment.OnFragmentInteractionListener) context;
+        if (context instanceof MapFragment.OnFragmentInteractionListener) {
+            activity = (MapFragment.OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");

@@ -109,11 +109,11 @@ public class DatabaseUtils {
     }
 
 
-    public static void loadProfileImage(String id, OnSuccessListener<Object> onSuccessListener, OnFailureListener onFailureListener) {
+    public static void loadProfileImage(String id, OnSuccessListener<Bitmap> onSuccessListener, OnFailureListener onFailureListener) {
         loadImage(getProfileStorageReferenceForId(id), onSuccessListener, onFailureListener);
     }
 
-    public static void loadImage(StorageReference storageReference, OnSuccessListener<Object> onSuccessListener, OnFailureListener onFailureListener) {
+    public static void loadImage(StorageReference storageReference, OnSuccessListener<Bitmap> onSuccessListener, OnFailureListener onFailureListener) {
         Bitmap bitmapFromMemCache = CacheUtils.getBitmapFromMemCache(storageReference.getPath());
         if (bitmapFromMemCache != null) {
             //cache work
@@ -127,7 +127,10 @@ public class DatabaseUtils {
                 Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE);//async storage exception when the image doesn't exist
 
                 if (onSuccessListener != null) {
-                    task.addOnSuccessListener(onSuccessListener);
+                    task.addOnSuccessListener(bytes -> {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                        onSuccessListener.onSuccess(bitmap);
+                    });
                 }
                 if (onFailureListener != null) {
                     task.addOnFailureListener(onFailureListener);

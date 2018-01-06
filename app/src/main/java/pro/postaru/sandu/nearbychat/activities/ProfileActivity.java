@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -15,7 +14,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -129,7 +127,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         loadProfileData();
     }
-
 
 
     @Override
@@ -292,20 +289,10 @@ public class ProfileActivity extends AppCompatActivity {
 
         userProfileDatabaseReference.addListenerForSingleValueEvent(userProfileListener);
 
-        DatabaseUtils.loadProfileImage(userId, (Object o) -> {
-            Bitmap avatar = null;
-            if (o instanceof byte[]) {
-                byte[] bytes = (byte[]) o;
-                avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            }
-
-            if (o instanceof Bitmap) {
-                avatar = (Bitmap) o;
-            }
-
-            if (avatar != null) {
-                userProfile.setAvatar(avatar);
-                profileImage.setImageBitmap(avatar);
+        DatabaseUtils.loadProfileImage(userId, bitmap -> {
+            if (bitmap != null) {
+                userProfile.setAvatar(bitmap);
+                profileImage.setImageBitmap(bitmap);
 
                 profileImage.setVisibility(View.VISIBLE);
                 profileImageIcon.setVisibility(View.VISIBLE);

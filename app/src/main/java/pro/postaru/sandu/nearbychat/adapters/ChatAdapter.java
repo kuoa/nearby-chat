@@ -1,11 +1,8 @@
 package pro.postaru.sandu.nearbychat.adapters;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -22,9 +19,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -130,18 +125,10 @@ public class ChatAdapter extends ArrayAdapter<Message> {
                     .getReferenceFromUrl(imageUrl);
 
             DatabaseUtils.loadImage(storageReference,
-                    (Object o) -> {
-                        Bitmap avatar = null;
-                        if (o instanceof byte[]) {
-                            byte[] bytes = (byte[]) o;
-                            avatar = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    bitmap -> {
+                        if (bitmap != null) {
+                            imageView.setImageBitmap(bitmap);
                         }
-
-                        if (o instanceof Bitmap) {
-                            avatar = (Bitmap) o;
-                        }
-
-                        imageView.setImageBitmap(avatar);
                     },
                     null);
         }
@@ -161,38 +148,47 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
             DatabaseUtils.loadRecord(storageReference,
                     (Object o) -> {
+                        FileInputStream audioRecordInputStream = null;
                         if (o instanceof byte[]) {
                             byte[] bytes = (byte[]) o;
                             try {
-                                FileInputStream audioRecordInputStream = SoundUtils.decodeByteArray(bytes, activity);
-                                button.setOnClickListener(v -> {
-                                    if(!mediaPlayer.isPlaying()) {
-                                        try {
-                                            button.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_stop_black_24px));
-
-                                            mediaPlayer.reset();
-                                            mediaPlayer.setDataSource(audioRecordInputStream.getFD());
-
-                                            mediaPlayer.prepare();
-                                            mediaPlayer.start();
-
-                                            mediaPlayer.setOnCompletionListener(mp -> {
-                                                button.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_play_arrow_black_24px));
-                                            });
-
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                    else{
-                                        button.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_play_arrow_black_24px));
-                                        mediaPlayer.stop();
-                                    }
-                                });
+                                audioRecordInputStream = SoundUtils.decodeByteArray(bytes, activity);
 
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                        }
+                        if (o instanceof String) {
+                            //TODO temp file name just need to load the data from the temp file
+
+                        }
+                        if (audioRecordInputStream != null) {
+                            FileInputStream finalAudioRecordInputStream = audioRecordInputStream;
+                            //event for on click
+                            button.setOnClickListener(v -> {
+                                if (!mediaPlayer.isPlaying()) {
+                                    try {
+                                        button.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_stop_black_24px));
+
+                                        mediaPlayer.reset();
+
+                                        mediaPlayer.setDataSource(finalAudioRecordInputStream.getFD());
+
+                                        mediaPlayer.prepare();
+                                        mediaPlayer.start();
+
+                                        mediaPlayer.setOnCompletionListener(mp -> button.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_play_arrow_black_24px)));
+
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                } else {
+                                    button.setImageDrawable(activity.getResources().getDrawable(R.drawable.ic_play_arrow_black_24px));
+                                    mediaPlayer.stop();
+                                }
+                            });
+
+
                         }
                     },
                     null);
