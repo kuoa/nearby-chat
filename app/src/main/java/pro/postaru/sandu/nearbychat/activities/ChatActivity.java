@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.Image;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
@@ -48,6 +49,8 @@ import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.models.Message;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
+import pro.postaru.sandu.nearbychat.utils.ImageUtils;
+import pro.postaru.sandu.nearbychat.utils.PermissionUtils;
 
 
 public class ChatActivity extends AppCompatActivity {
@@ -255,12 +258,12 @@ public class ChatActivity extends AppCompatActivity {
 
         boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
         if (isAndroidVersionNew) {
-            if (!hasWritePermission()) {
+            if (!PermissionUtils.hasWritePermission(this)) {
                 ActivityCompat.requestPermissions(this, WRITE_EXTERNAL_PERMISSION, 1);
             }
         }
 
-        if (!isAndroidVersionNew || hasWritePermission()) {
+        if (!isAndroidVersionNew || PermissionUtils.hasWritePermission(this)) {
 
             Intent galleryIntent = new Intent(Intent.ACTION_PICK,
                     android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -273,16 +276,15 @@ public class ChatActivity extends AppCompatActivity {
 
         boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
         if (isAndroidVersionNew) {
-            if (!hasCameraPermission()) {
+            if (!PermissionUtils.hasCameraPermission(this)) {
                 ActivityCompat.requestPermissions(this, new String[]{CAMERA_PERMISSION[0], WRITE_EXTERNAL_PERMISSION[0]}, 1);
             }
         }
 
-        if (!isAndroidVersionNew || hasCameraPermission()) {
+        if (!isAndroidVersionNew || PermissionUtils.hasCameraPermission(this)) {
             Intent takePhotoIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
 
-
-            imageUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".my.package.name.provider", createImageFile());
+            imageUri = FileProvider.getUriForFile(this, getApplicationContext().getPackageName() + ".my.package.name.provider", ImageUtils.createImageFile());
 
             takePhotoIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
@@ -297,7 +299,6 @@ public class ChatActivity extends AppCompatActivity {
         if (resultCode == this.RESULT_CANCELED) {
             return;
         }
-
 
         if (requestCode == GALLERY) {
             if (data != null) {
@@ -329,19 +330,8 @@ public class ChatActivity extends AppCompatActivity {
             }
 
         }
-
-
     }
 
-    private boolean hasWritePermission() {
-        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        return result == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private boolean hasCameraPermission() {
-        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
-        return result == PackageManager.PERMISSION_GRANTED;
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
@@ -371,59 +361,11 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    private File createImageFile() {
-        File path = Environment.getExternalStoragePublicDirectory(
-                "NearbyChat");
-        File file = new File(path, DatabaseUtils.getCurrentUUID() + "-" + Calendar.getInstance()
-                .getTimeInMillis() + ".jpg");
-
-        if (!path.exists()) {
-            path.mkdirs();
-        }
-        try {
-            file.createNewFile();
-            return file;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    private ByteArrayOutputStream compressImage(Bitmap myBitmap) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        myBitmap.compress(Bitmap.CompressFormat.JPEG, 80, bytes);
-
-        return bytes;
-    }
-
-    private Bitmap resizeImage(Bitmap myBitmap) {
-
-        int width = myBitmap.getWidth();
-        int height = myBitmap.getHeight();
-
-        float max = Math.max(width, height);
-        float ratio;
-
-        if (max < 1024) {
-            ratio = 1;
-        } else {
-            ratio = (1024 / max) - 0.05f;
-            Log.w(Constant.NEARBY_CHAT, ratio + "");
-        }
-
-        Log.w(Constant.NEARBY_CHAT, width * ratio + "");
-        Log.w(Constant.NEARBY_CHAT, height * ratio + "");
-
-        return Bitmap.createScaledBitmap(myBitmap, (int) (width * ratio),
-                (int) (height * ratio), true);
-    }
-
     public String saveImage(Bitmap myBitmap) {
 
-        File file = createImageFile();
-        resizedImage = resizeImage(myBitmap);
-        ByteArrayOutputStream bytes = compressImage(resizedImage);
+        File file = ImageUtils.createImageFile();
+        resizedImage = ImageUtils.resizeImage(myBitmap);
+        ByteArrayOutputStream bytes = ImageUtils.compressImage(resizedImage);
 
         try (FileOutputStream fo = new FileOutputStream(file)) {
             fo.write(bytes.toByteArray());

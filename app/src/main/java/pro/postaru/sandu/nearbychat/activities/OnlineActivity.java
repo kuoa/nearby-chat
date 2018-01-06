@@ -62,7 +62,7 @@ import pro.postaru.sandu.nearbychat.constants.Database;
 import pro.postaru.sandu.nearbychat.fragments.MapViewFragment;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
-import pro.postaru.sandu.nearbychat.utils.Network;
+import pro.postaru.sandu.nearbychat.utils.NetworkUtils;
 
 import static pro.postaru.sandu.nearbychat.constants.Constant.FIREBASE_STORAGE_REFERENCE;
 import static pro.postaru.sandu.nearbychat.constants.Constant.LOCATION_SERVICES;
@@ -207,7 +207,7 @@ public class OnlineActivity extends AppCompatActivity
 
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        if (Network.isAvailable(connectivityManager)) {
+        if (NetworkUtils.isAvailable(connectivityManager)) {
             loadProfileOnline();
         } else {
             initProfileView(drawerView);

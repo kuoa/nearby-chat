@@ -3,7 +3,7 @@ package pro.postaru.sandu.nearbychat.utils;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-public class Network {
+public class NetworkUtils {
 
     public static boolean isAvailable(ConnectivityManager connectivityManager) {
         NetworkInfo activeNetworkInfo = null;

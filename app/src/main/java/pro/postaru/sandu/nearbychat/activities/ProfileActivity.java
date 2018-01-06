@@ -40,7 +40,8 @@ import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.models.UserProfile;
 import pro.postaru.sandu.nearbychat.utils.DataValidator;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
-import pro.postaru.sandu.nearbychat.utils.Network;
+import pro.postaru.sandu.nearbychat.utils.NetworkUtils;
+import pro.postaru.sandu.nearbychat.utils.PermissionUtils;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -116,25 +117,20 @@ public class ProfileActivity extends AppCompatActivity {
             Log.d(Constant.NEARBY_CHAT, "profileImage setOnClickListener: ");
             boolean isAndroidVersionNew = Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP_MR1;
             if (isAndroidVersionNew) {
-                if (!hasReadPermission()) {
+                if (!PermissionUtils.hasReadPermission(this)) {
                     ActivityCompat.requestPermissions(activity, READ_STORAGE_PERMISSION
                             , 1);
                 }
             }
-            if (!isAndroidVersionNew || hasReadPermission()) {
+            if (!isAndroidVersionNew || PermissionUtils.hasReadPermission(this)) {
                 pickProfileImage();
             }
         });
-
 
         loadProfileData();
     }
 
 
-    private boolean hasReadPermission() {
-        int result = ContextCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        return result == PackageManager.PERMISSION_GRANTED;
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
@@ -196,7 +192,7 @@ public class ProfileActivity extends AppCompatActivity {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        if (Network.isAvailable(connectivityManager)) {
+        if (NetworkUtils.isAvailable(connectivityManager)) {
             //load online information
             loadProfileOnline();
         } else {
@@ -259,7 +255,7 @@ public class ProfileActivity extends AppCompatActivity {
             ConnectivityManager connectivityManager
                     = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-            if (Network.isAvailable(connectivityManager)) {
+            if (NetworkUtils.isAvailable(connectivityManager)) {
                 saveProfileOnline();
             }
         }
