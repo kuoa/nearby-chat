@@ -27,7 +27,6 @@ import pro.postaru.sandu.nearbychat.R;
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.models.Message;
 import pro.postaru.sandu.nearbychat.utils.DatabaseUtils;
-import pro.postaru.sandu.nearbychat.utils.SoundUtils;
 
 public class ChatAdapter extends ArrayAdapter<Message> {
 
@@ -149,19 +148,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
             DatabaseUtils.loadRecord(storageReference,
                     (Object o) -> {
                         FileInputStream audioRecordInputStream = null;
-                        if (o instanceof byte[]) {
-                            byte[] bytes = (byte[]) o;
-                            try {
-                                audioRecordInputStream = SoundUtils.decodeByteArray(bytes, activity);
 
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                        if (o instanceof String) {
-                            //TODO temp file name just need to load the data from the temp file
-
-                        }
                         if (audioRecordInputStream != null) {
                             FileInputStream finalAudioRecordInputStream = audioRecordInputStream;
                             //event for on click
@@ -191,7 +178,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
                         }
                     },
-                    null);
+                    null, activity);
 
         } else {
             Log.w(Constant.NEARBY_CHAT, "Wrong type of message");

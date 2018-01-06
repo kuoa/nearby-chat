@@ -1,6 +1,7 @@
 package pro.postaru.sandu.nearbychat.utils;
 
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -20,6 +21,8 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import pro.postaru.sandu.nearbychat.constants.Constant;
 import pro.postaru.sandu.nearbychat.constants.Database;
@@ -126,15 +129,8 @@ public class DatabaseUtils {
 
                 Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE);//async storage exception when the image doesn't exist
 
-                if (onSuccessListener != null) {
-                    task.addOnSuccessListener(bytes -> {
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                        onSuccessListener.onSuccess(bitmap);
-                    });
-                }
                 if (onFailureListener != null) {
                     task.addOnFailureListener(onFailureListener);
-
                 }
                 //debug listeners
                 task.addOnSuccessListener(bytes -> {
@@ -143,7 +139,11 @@ public class DatabaseUtils {
 
                     if (image != null) {
                         CacheUtils.addBitmapToMemoryCache(storageReference.getPath(), image);
+                        if (onSuccessListener != null) {
+                            onSuccessListener.onSuccess(image);
+                        }
                     }
+
                     Log.d(Constant.CACHE_UTILS, "storeImage:ok ");
 
                 }).addOnFailureListener(exception -> {
@@ -191,7 +191,7 @@ public class DatabaseUtils {
     }
 
 
-    public static void loadRecord(StorageReference storageReference, OnSuccessListener<Object> onSuccessListener, OnFailureListener onFailureListener) {
+    public static void loadRecord(StorageReference storageReference, OnSuccessListener<Object> onSuccessListener, OnFailureListener onFailureListener, Activity activity) {
 
         try {
             final long ONE_MEGABYTE = 1024 * 1024;
@@ -199,7 +199,14 @@ public class DatabaseUtils {
             Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE); //async storage exception when the image doesn't exist
 
             if (onSuccessListener != null) {
-                task.addOnSuccessListener(onSuccessListener);
+                task.addOnSuccessListener(bytes -> {
+                    try {
+                        FileInputStream fileInputStream = SoundUtils.decodeByteArray(bytes, activity);
+                        onSuccessListener.onSuccess(fileInputStream);
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                });
             }
             if (onFailureListener != null) {
                 task.addOnFailureListener(onFailureListener);
