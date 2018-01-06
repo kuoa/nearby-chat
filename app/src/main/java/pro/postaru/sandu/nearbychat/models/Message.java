@@ -7,21 +7,30 @@ import java.util.Date;
 @IgnoreExtraProperties
 public class Message {
 
+    // using a Type enum and not instanceof facilitates the adapter implementation
     public enum Type {
-        TEXT, IMAGE
+        TEXT, IMAGE, SOUND
     }
-
-    ;
 
     private String id;
     private String senderId;
-    private String content;
     private Date date;
     private Type type;
+
+    private Object content;
+
 
     // required empty constructor for firebase loading
 
     public Message() {
+    }
+
+    public Object getContent() {
+        return content;
+    }
+
+    public void setContent(Object content) {
+        this.content = content;
     }
 
     public String getId() {
@@ -38,14 +47,6 @@ public class Message {
 
     public void setSenderId(String senderId) {
         this.senderId = senderId;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
     }
 
     public Date getDate() {

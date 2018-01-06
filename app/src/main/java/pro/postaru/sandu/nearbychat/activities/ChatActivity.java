@@ -166,7 +166,7 @@ public class ChatActivity extends AppCompatActivity {
         DatabaseUtils.getMessagesByConversationId(conversationId)
                 .addChildEventListener(messageListener);
 
-        chatAdapter = new ChatAdapter(this, R.layout.chat_entry, messages);
+        chatAdapter = new ChatAdapter(this, messages);
         messageListView = (ListView) findViewById(R.id.message_list);
         messageListView.setVisibility(View.GONE);
 
@@ -183,24 +183,24 @@ public class ChatActivity extends AppCompatActivity {
     private void sendMessage() {
         Message newMessage = new Message();
 
-        String content;
-
         // text message
         if (imageUrl == null) {
-            content = messageEditView.getText().toString();
+
+            String textContent = messageEditView.getText().toString();
             newMessage.setType(Message.Type.TEXT);
+            newMessage.setContent(textContent);
 
             messageEditView.setText("");
         }
         // image message
         else {
-            content = imageUrl;
+
             newMessage.setType(Message.Type.IMAGE);
+            newMessage.setContent(imageUrl);
 
             imageUrl = null;
         }
 
-        newMessage.setContent(content);
         newMessage.setDate(new Date());
         newMessage.setSenderId(DatabaseUtils.getCurrentUUID());
 
@@ -466,5 +466,4 @@ public class ChatActivity extends AppCompatActivity {
         super.onDestroy();
         DatabaseUtils.getMessagesByConversationId(conversationId).removeEventListener(messageListener);
     }
-
 }
