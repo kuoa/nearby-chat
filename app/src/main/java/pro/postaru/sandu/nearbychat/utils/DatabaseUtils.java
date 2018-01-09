@@ -71,13 +71,32 @@ public class DatabaseUtils {
         return FirebaseStorage.getInstance(FIREBASE_STORAGE_REFERENCE);
     }
 
+    public static DatabaseReference getUserProfileReferenceById(String userId) {
+        return getCurrentDatabaseReference().child(Database.userProfiles).child(userId);
+    }
+
+    public static DatabaseReference getConversationsReferenceById(String userId) {
+        return getCurrentDatabaseReference().child(Database.userConversations).child(userId).child("conversations");
+    }
+
+    public static DatabaseReference getMessagesByConversationId(String conversationId) {
+        return getCurrentDatabaseReference().child(Database.userMessages).child(conversationId).child("messages");
+    }
+
+    /**
+     * Save the specified image profile of the current user in the dedicated storage and call the listener when it's done
+     *
+     * @param bitmap            profileImage
+     * @param onSuccessListener onSuccessListener
+     * @param onFailureListener onFailureListener
+     */
     public static void saveProfilePicture(Bitmap bitmap, OnSuccessListener<UploadTask.TaskSnapshot> onSuccessListener, OnFailureListener onFailureListener) {
         StorageReference reference = DatabaseUtils.getCurrentProfileStorageReference();
         savePictureOnline(bitmap, reference, onSuccessListener, onFailureListener);
     }
 
     /**
-     * Store the provided image online and call the listener when it's done
+     * Store the provided image in the specified storage reference and call the listener when it's done
      * The listeners are optional
      *
      * @param bitmap            the image
@@ -111,11 +130,24 @@ public class DatabaseUtils {
         });
     }
 
-
-    public static void loadProfileImage(String id, OnSuccessListener<Bitmap> onSuccessListener, OnFailureListener onFailureListener) {
-        loadImage(getProfileStorageReferenceForId(id), onSuccessListener, onFailureListener);
+    /**
+     * Load the profile image of the specified user from the dedicated storage and call the listener when it's done
+     *
+     * @param userId            user id
+     * @param onSuccessListener onSuccessListener
+     * @param onFailureListener onFailureListener
+     */
+    public static void loadProfileImage(String userId, OnSuccessListener<Bitmap> onSuccessListener, OnFailureListener onFailureListener) {
+        loadImage(getProfileStorageReferenceForId(userId), onSuccessListener, onFailureListener);
     }
 
+    /**
+     * Load the image from the specified storage reference and call the listener when it's done
+     *
+     * @param storageReference  storageReference
+     * @param onSuccessListener onSuccessListener
+     * @param onFailureListener onFailureListener
+     */
     public static void loadImage(StorageReference storageReference, OnSuccessListener<Bitmap> onSuccessListener, OnFailureListener onFailureListener) {
         Bitmap bitmapFromMemCache = CacheUtils.getBitmapFromMemCache(storageReference.getPath());
         if (bitmapFromMemCache != null) {
@@ -190,30 +222,37 @@ public class DatabaseUtils {
         });
     }
 
-
-    public static void loadRecord(StorageReference storageReference, String messageId, OnSuccessListener<FileInputStream> onSuccessListener, OnFailureListener onFailureListener, Activity activity) {
-        FileInputStream fileInputStreamFromCache = CacheUtils.getRecordFromMemCache(messageId);
+    /**
+     * and call the listener when it's done
+     *
+     * @param storageReference  storageReference
+     * @param identifier        record identifier
+     * @param onSuccessListener onSuccessListener
+     * @param onFailureListener onFailureListener
+     * @param activity          the activity
+     */
+    public static void loadRecord(StorageReference storageReference, String identifier, OnSuccessListener<FileInputStream> onSuccessListener, OnFailureListener onFailureListener, Activity activity) {
+        //Retrieve the record from the cache
+        FileInputStream fileInputStreamFromCache = CacheUtils.getRecordFromMemCache(identifier, activity);
         if (fileInputStreamFromCache != null) {
             //cache work
-            Log.d(Constant.CACHE_UTILS, "loadRecord: ok messageId = [" + messageId + "]+activity = [" + activity + "]");
-
+            Log.d(Constant.CACHE_UTILS, "loadRecord: ok identifier = [" + identifier + "]+activity = [" + activity + "]");
             onSuccessListener.onSuccess(fileInputStreamFromCache);
         } else {
             try {
                 final long ONE_MEGABYTE = 1024 * 1024;
 
-                Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE); //async storage exception when the image doesn't exist
+                Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE); //async storage exception when the record doesn't exist
 
                 if (onSuccessListener != null) {
                     task.addOnSuccessListener(bytes -> {
                         try {
                             //we decode the bytes and store it in the internal temp directory
-                            File file = SoundUtils.decodeByteArray(messageId, bytes, activity);
+                            File file = SoundUtils.decodeByteArray(identifier, bytes, activity);
                             if (file != null) {
                                 //we save the path of the newly created file in the cache
-                                Log.d(Constant.CACHE_UTILS, "SaveRecord: ok messageId = [" + messageId + "]+activity = [" + activity + "]");
-                                CacheUtils.addRecordToMemoryCache(messageId, file.getAbsolutePath());
-
+                                Log.d(Constant.CACHE_UTILS, "SaveRecord: ok identifier = [" + identifier + "]+activity = [" + activity + "]");
+                                CacheUtils.addRecordToMemoryCache(identifier, file.getAbsolutePath());
                                 onSuccessListener.onSuccess(new FileInputStream(file));
                             }
 
@@ -226,10 +265,8 @@ public class DatabaseUtils {
                     task.addOnFailureListener(onFailureListener);
                 }
                 //debug listeners
-                task.addOnSuccessListener(bytes -> {
-                    Log.d(Constant.NEARBY_CHAT, "loadRecord() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
-
-                }).addOnFailureListener(exception -> {
+                task.addOnSuccessListener(bytes -> Log.d(Constant.NEARBY_CHAT, "loadRecord() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]"));
+                task.addOnFailureListener(exception -> {
                     // Handle any errors
                     Log.d(Constant.NEARBY_CHAT, "loadRecord() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
                     Log.w(Constant.NEARBY_CHAT, "loadRecord: ", exception);
@@ -240,17 +277,5 @@ public class DatabaseUtils {
         }
     }
 
-
-    public static DatabaseReference getUserProfileReferenceById(String userId) {
-        return getCurrentDatabaseReference().child(Database.userProfiles).child(userId);
-    }
-
-    public static DatabaseReference getConversationsReferenceById(String userId) {
-        return getCurrentDatabaseReference().child(Database.userConversations).child(userId).child("conversations");
-    }
-
-    public static DatabaseReference getMessagesByConversationId(String conversationId) {
-        return getCurrentDatabaseReference().child(Database.userMessages).child(conversationId).child("messages");
-    }
 
 }

@@ -11,7 +11,7 @@ public class DataValidator {
         return bio.length() < 40;
     }
 
-    public static boolean isEmailVaid(String email) {
+    public static boolean isEmailValid(String email) {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 

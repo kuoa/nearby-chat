@@ -111,7 +111,7 @@ public class RegisterFragment extends Fragment {
             errorView = password1View;
         }
 
-        if (TextUtils.isEmpty(userEmail) || !DataValidator.isEmailVaid(userEmail)) {
+        if (TextUtils.isEmpty(userEmail) || !DataValidator.isEmailValid(userEmail)) {
             emailView.setError(getString(R.string.error_invalid_email));
             errorView = emailView;
         }

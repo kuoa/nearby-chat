@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
@@ -72,27 +71,6 @@ public class ChatActivity extends AppCompatActivity {
 
     private EditText messageEditView;
     private ImageButton messageSendButton;
-
-    private String imagePath;
-    private String imageUrl;
-    private Uri imageUri;
-    private Bitmap resizedImage;
-
-    private ImageButton messageAtachImageButton;
-    private ListView messageListView;
-
-    private ProgressBar progressBar;
-
-    private UserProfile conversationPartner;
-
-    private ImageButton messageRecordButton;
-    private MediaRecorder mediaRecorder;
-
-    private boolean recording;
-    private String recordPath;
-    private String recordUrl;
-
-
     private final TextWatcher editMessageTextWatcher = new TextWatcher() {
         @Override
         public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -114,7 +92,13 @@ public class ChatActivity extends AppCompatActivity {
 
         }
     };
-
+    private String imagePath;
+    private String imageUrl;
+    private Uri imageUri;
+    private Bitmap resizedImage;
+    private ImageButton messageAtachImageButton;
+    private ListView messageListView;
+    private ProgressBar progressBar;
     private final ChildEventListener messageListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -152,6 +136,12 @@ public class ChatActivity extends AppCompatActivity {
             Log.w(Constant.NEARBY_CHAT, "loadPost:onCancelled", databaseError.toException());
         }
     };
+    private UserProfile conversationPartner;
+    private ImageButton messageRecordButton;
+    private MediaRecorder mediaRecorder;
+    private boolean recording;
+    private String recordPath;
+    private String recordUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -260,9 +250,7 @@ public class ChatActivity extends AppCompatActivity {
                 sendMessage();
             });
 
-        }, e -> {
-            Log.w(Constant.NEARBY_CHAT, e.getMessage());
-        });
+        }, e -> Log.w(Constant.NEARBY_CHAT, e.getMessage()));
     }
 
     private void sendRecord(){
@@ -272,9 +260,7 @@ public class ChatActivity extends AppCompatActivity {
                 recordUrl = e.toString();
                 sendMessage();
             });
-        }, e -> {
-            Log.w(Constant.NEARBY_CHAT, e.getMessage());
-        });
+        }, e -> Log.w(Constant.NEARBY_CHAT, e.getMessage()));
 
     }
 

@@ -133,8 +133,6 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
         // Sound recording
         else if (message.getType() == Message.Type.SOUND) {
-            //TODO change url token is hard coded
-            //Use the id of the message to store the data in the firebase storage
             String recordUrl = (String) message.getContent();
             ImageButton button = (ImageButton) convertView.findViewById(R.id.chat_audio);
             abstractView = button;

@@ -1,12 +1,16 @@
 package pro.postaru.sandu.nearbychat.utils;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v4.util.LruCache;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+
+import pro.postaru.sandu.nearbychat.constants.Constant;
 
 
 public class CacheUtils {
@@ -16,9 +20,17 @@ public class CacheUtils {
     private static final int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
     // Use 1/8th of the available memory for this memory cache.
     private static final int cacheSize = maxMemory / 8;
+
     private static LruCache<String, Bitmap> mBitmapMemoryCache;
     private static LruCache<String, String> mRecordMemoryCache;
 
+    /**
+     * Store the specified bitmap and its identifier in th memory cache
+     * if already something is already associated with the key we ignore the new value
+     *
+     * @param key    identifier
+     * @param bitmap bitmap
+     */
     public static void addBitmapToMemoryCache(String key, @NonNull Bitmap bitmap) {
         initBitmapCache();
         if (getBitmapFromMemCache(key) == null) {
@@ -26,6 +38,13 @@ public class CacheUtils {
         }
     }
 
+    /**
+     * Retrieve the Bitmap associated for the specified key
+     * Return null if the bitmap is not in the cache
+     *
+     * @param key the key
+     * @return the bitmap
+     */
     public static Bitmap getBitmapFromMemCache(@NonNull String key) {
         initBitmapCache();
         return mBitmapMemoryCache.get(key);
@@ -51,37 +70,69 @@ public class CacheUtils {
 
     }
 
-    private static void initRecordCache() {
+    /**
+     * Init the record cache
+     * If you want to repopulate the in memory cache from the internal space you must specify the dedicated directory
+     *
+     * @param cacheDirectory cacheDirectory  (optional)
+     */
+    private static void initRecordCache(File cacheDirectory) {
 
-        //TODO init with the last saved data from the cached directory
+
         if (mRecordMemoryCache != null) return;
 
 
         mRecordMemoryCache = new LruCache<>(cacheSize);
+        //populate in memory table
+        if (cacheDirectory != null) {
+            Log.d(Constant.CACHE_UTILS, "initRecordCache: populate in memory cache");
+            //list of file
+            File[] fileList = cacheDirectory.listFiles();
 
+            for (File file : fileList) {
+                String fileName = file.getName();
+                String absolutePath = file.getAbsolutePath();
+                mRecordMemoryCache.put(fileName, absolutePath);
+            }
+        }
 
     }
 
-    public static FileInputStream getRecordFromMemCache(String path) {
+    /**
+     * Retrieve record from the specified activity's cache directory
+     * return null if not found
+     *
+     * @param key      key
+     * @param activity current activity
+     * @return the record (FileInputStream)
+     */
+    public static FileInputStream getRecordFromMemCache(String key, Activity activity) {
         FileInputStream fileInputStream = null;
-        initRecordCache();
-        String completePath = mRecordMemoryCache.get(path);
-        if (completePath != null) {
+        initRecordCache(SoundUtils.getRecordDirectory(activity));
+
+        String absolutePath = mRecordMemoryCache.get(key);
+        if (absolutePath != null) {
 
             try {
-                fileInputStream = new FileInputStream(new File(completePath));
+                fileInputStream = new FileInputStream(new File(absolutePath));
             } catch (FileNotFoundException e) {
                 //cache is not synced
-                mRecordMemoryCache.remove(path);
+                mRecordMemoryCache.remove(key);
 
             }
         }
         return fileInputStream;
     }
 
-    public static void addRecordToMemoryCache(String storageReferencePath, String completePath) {
-        initRecordCache();
-        mRecordMemoryCache.put(storageReferencePath, completePath);
+    /**
+     * Store the specified key,value in the memoryCache
+     *
+     * @param key          key
+     * @param absolutePath path
+     */
+    public static void addRecordToMemoryCache(String key, String absolutePath) {
+        initRecordCache(null);
+        mRecordMemoryCache.put(key, absolutePath);
 
     }
 
