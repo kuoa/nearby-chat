@@ -191,37 +191,52 @@ public class DatabaseUtils {
     }
 
 
-    public static void loadRecord(StorageReference storageReference, OnSuccessListener<Object> onSuccessListener, OnFailureListener onFailureListener, Activity activity) {
+    public static void loadRecord(StorageReference storageReference, String messageId, OnSuccessListener<FileInputStream> onSuccessListener, OnFailureListener onFailureListener, Activity activity) {
+        FileInputStream fileInputStreamFromCache = CacheUtils.getRecordFromMemCache(messageId);
+        if (fileInputStreamFromCache != null) {
+            //cache work
+            Log.d(Constant.CACHE_UTILS, "loadRecord: ok messageId = [" + messageId + "]+activity = [" + activity + "]");
 
-        try {
-            final long ONE_MEGABYTE = 1024 * 1024;
+            onSuccessListener.onSuccess(fileInputStreamFromCache);
+        } else {
+            try {
+                final long ONE_MEGABYTE = 1024 * 1024;
 
-            Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE); //async storage exception when the image doesn't exist
+                Task<byte[]> task = storageReference.getBytes(ONE_MEGABYTE); //async storage exception when the image doesn't exist
 
-            if (onSuccessListener != null) {
+                if (onSuccessListener != null) {
+                    task.addOnSuccessListener(bytes -> {
+                        try {
+                            //we decode the bytes and store it in the internal temp directory
+                            File file = SoundUtils.decodeByteArray(messageId, bytes, activity);
+                            if (file != null) {
+                                //we save the path of the newly created file in the cache
+                                Log.d(Constant.CACHE_UTILS, "SaveRecord: ok messageId = [" + messageId + "]+activity = [" + activity + "]");
+                                CacheUtils.addRecordToMemoryCache(messageId, file.getAbsolutePath());
+
+                                onSuccessListener.onSuccess(new FileInputStream(file));
+                            }
+
+                        } catch (FileNotFoundException e) {
+                            Log.e(Constant.NEARBY_CHAT, "loadRecord: fail ", e);
+                        }
+                    });
+                }
+                if (onFailureListener != null) {
+                    task.addOnFailureListener(onFailureListener);
+                }
+                //debug listeners
                 task.addOnSuccessListener(bytes -> {
-                    try {
-                        FileInputStream fileInputStream = SoundUtils.decodeByteArray(bytes, activity);
-                        onSuccessListener.onSuccess(fileInputStream);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                });
-            }
-            if (onFailureListener != null) {
-                task.addOnFailureListener(onFailureListener);
-            }
-            //debug listeners
-            task.addOnSuccessListener(bytes -> {
-                Log.d(Constant.NEARBY_CHAT, "loadRecord() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+                    Log.d(Constant.NEARBY_CHAT, "loadRecord() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
 
-            }).addOnFailureListener(exception -> {
-                // Handle any errors
-                Log.d(Constant.NEARBY_CHAT, "loadRecord() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
-                Log.w(Constant.NEARBY_CHAT, "loadRecord: ", exception);
-            });
-        } catch (RuntimeException e) {
-            Log.w(Constant.NEARBY_CHAT, "loadRecord: ", e);
+                }).addOnFailureListener(exception -> {
+                    // Handle any errors
+                    Log.d(Constant.NEARBY_CHAT, "loadRecord() called with: storagReference = [" + storageReference + "], onSuccessListener = [" + onSuccessListener + "], onFailureListener = [" + onFailureListener + "]");
+                    Log.w(Constant.NEARBY_CHAT, "loadRecord: ", exception);
+                });
+            } catch (RuntimeException e) {
+                Log.w(Constant.NEARBY_CHAT, "loadRecord: ", e);
+            }
         }
     }
 

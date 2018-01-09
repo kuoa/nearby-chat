@@ -19,7 +19,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -134,6 +133,8 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
         // Sound recording
         else if (message.getType() == Message.Type.SOUND) {
+            //TODO change url token is hard coded
+            //Use the id of the message to store the data in the firebase storage
             String recordUrl = (String) message.getContent();
             ImageButton button = (ImageButton) convertView.findViewById(R.id.chat_audio);
             abstractView = button;
@@ -145,12 +146,11 @@ public class ChatAdapter extends ArrayAdapter<Message> {
             StorageReference storageReference = DatabaseUtils.getStorageDatabase()
                     .getReferenceFromUrl(recordUrl);
 
-            DatabaseUtils.loadRecord(storageReference,
-                    (Object o) -> {
-                        FileInputStream audioRecordInputStream = null;
+            DatabaseUtils.loadRecord(storageReference, message.getId(),
+                    audioRecordInputStream -> {
 
                         if (audioRecordInputStream != null) {
-                            FileInputStream finalAudioRecordInputStream = audioRecordInputStream;
+
                             //event for on click
                             button.setOnClickListener(v -> {
                                 if (!mediaPlayer.isPlaying()) {
@@ -159,7 +159,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
                                         mediaPlayer.reset();
 
-                                        mediaPlayer.setDataSource(finalAudioRecordInputStream.getFD());
+                                        mediaPlayer.setDataSource(audioRecordInputStream.getFD());
 
                                         mediaPlayer.prepare();
                                         mediaPlayer.start();
