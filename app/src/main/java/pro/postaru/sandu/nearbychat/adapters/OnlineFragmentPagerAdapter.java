@@ -6,7 +6,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import pro.postaru.sandu.nearbychat.fragments.ConversationsFragment;
 import pro.postaru.sandu.nearbychat.fragments.MapFragment;
-import pro.postaru.sandu.nearbychat.fragments.UserListFragment;
 
 public class OnlineFragmentPagerAdapter extends FragmentPagerAdapter {
 
@@ -18,11 +17,9 @@ public class OnlineFragmentPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return UserListFragment.newInstance(1);
 
-            case 1:
                 return MapFragment.newInstance();
-            case 2:
+            case 1:
                 return ConversationsFragment.newInstance();
             default:
                 return MapFragment.newInstance();
@@ -31,6 +28,6 @@ public class OnlineFragmentPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 3;
+        return 2;
     }
 }

@@ -37,7 +37,7 @@ public class ConversationsFragment extends Fragment {
 
             UserProfile userProfile = dataSnapshot.getValue(UserProfile.class);
 
-            mainProgresBar.setVisibility(View.GONE);
+            if (mainProgresBar != null) mainProgresBar.setVisibility(View.GONE);
 
             if (userProfile != null) {
                 activeConversationsAdapter.add(userProfile);

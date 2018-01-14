@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,6 +90,26 @@ public class MapFragment extends Fragment {
     private GeoFire geoFire;
     private String userId;
     private Circle circle;
+    private OnFragmentInteractionListener activity;
+    private GeoQuery geoQuery;
+    private final LocationCallback locationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            super.onLocationResult(locationResult);
+            for (Location location : locationResult.getLocations()) {
+                Log.d(LOCATION_SERVICES, "onLocationResult() called with: locationResult = [" + locationResult + "]" + location.getProvider() + " " + location.getAccuracy());
+
+                GeoLocation myLocation = new GeoLocation(location.getLatitude(), location.getLongitude());
+                geoFire.setLocation(userId, myLocation);
+
+                updateQuery(myLocation);
+
+                drawCenteredCircle(new LatLng(location.getLatitude(), location.getLongitude()), userId);
+
+            }
+        }
+    };
+    private int totalUser;
     private final GeoQueryEventListener geoQueryEventListener = new GeoQueryEventListener() {
 
         @Override
@@ -128,6 +149,10 @@ public class MapFragment extends Fragment {
                     }
                 }
             }, null);
+
+
+            //update number of people connected
+            incTotalUser();
         }
 
 
@@ -136,7 +161,10 @@ public class MapFragment extends Fragment {
             Log.d(Constant.NEARBY_CHAT, String.format("Key %s is no longer in the search area", key));
             Marker marker = stringMarkerMap.remove(key);
             marker.remove();
+            //update number of people connected
+            decTotalUser();
         }
+
 
         @Override
         public void onKeyMoved(String key, GeoLocation location) {
@@ -157,25 +185,6 @@ public class MapFragment extends Fragment {
         @Override
         public void onGeoQueryError(DatabaseError error) {
             Log.w(Constant.NEARBY_CHAT, "onGeoQueryError: There was an error with this query: ", error.toException());
-        }
-    };
-    private OnFragmentInteractionListener activity;
-    private GeoQuery geoQuery;
-    private final LocationCallback locationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            super.onLocationResult(locationResult);
-            for (Location location : locationResult.getLocations()) {
-                Log.d(LOCATION_SERVICES, "onLocationResult() called with: locationResult = [" + locationResult + "]" + location.getProvider() + " " + location.getAccuracy());
-
-                GeoLocation myLocation = new GeoLocation(location.getLatitude(), location.getLongitude());
-                geoFire.setLocation(userId, myLocation);
-
-                updateQuery(myLocation);
-
-                drawCenteredCircle(new LatLng(location.getLatitude(), location.getLongitude()), userId);
-
-            }
         }
     };
 
@@ -343,11 +352,27 @@ public class MapFragment extends Fragment {
     }
 
     private void clearGeoQuery() {
-
         if (geoQuery != null) {
             geoQuery.removeAllListeners();
             geoQuery = null;
         }
+    }
+
+    private void decTotalUser() {
+        if (totalUser > 0) totalUser--;
+        updateSubtitle();
+    }
+
+    private void updateSubtitle() {
+        Log.d(Constant.NEARBY_CHAT, "updateSubtitle: ");
+
+        Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar_main);
+        toolbar.setSubtitle(totalUser + " online user(s)");
+    }
+
+    private void incTotalUser() {
+        totalUser++;
+        updateSubtitle();
     }
 
     public interface OnFragmentInteractionListener {
