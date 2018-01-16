@@ -323,6 +323,7 @@ public class MapFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (geoFire != null) geoFire.removeLocation(userId);
         mMapView.onDestroy();
     }
 
@@ -352,6 +353,7 @@ public class MapFragment extends Fragment {
     }
 
     private void clearGeoQuery() {
+
         if (geoQuery != null) {
             geoQuery.removeAllListeners();
             geoQuery = null;
