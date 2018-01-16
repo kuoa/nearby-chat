@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import pro.postaru.sandu.nearbychat.R;
@@ -37,11 +38,16 @@ public class ChatAdapter extends ArrayAdapter<Message> {
 
     private MediaPlayer mediaPlayer;
 
+    private SimpleDateFormat dateFormat;
+
     public ChatAdapter(@NonNull Activity activity, List<Message> messages) {
         super(activity, 0, messages);
 
         this.activity = activity;
         this.messages = messages;
+
+        dateFormat = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+
         user = FirebaseAuth.getInstance().getCurrentUser();
         mediaPlayer = new MediaPlayer();
     }
@@ -85,7 +91,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         }
 
 
-        RelativeLayout.LayoutParams params = null;
+        RelativeLayout.LayoutParams mainViewParams = null;
         View abstractView = null;
 
         // Text
@@ -96,16 +102,16 @@ public class ChatAdapter extends ArrayAdapter<Message> {
             TextView messageView = (TextView) convertView.findViewById(R.id.chat_message);
             abstractView = messageView;
 
-            params = (RelativeLayout.LayoutParams) messageView.getLayoutParams();
-
             messageView.setText(textContent);
-            messageView.setPadding(20, 10, 20, 10);
+            //messageView.setPadding(20, 10, 20, 10);
 
             if (message.getSenderId().equals(user.getUid())) {
                 messageView.setTextColor(Color.BLACK);
             } else {
                 messageView.setTextColor(Color.WHITE);
             }
+
+            mainViewParams = (RelativeLayout.LayoutParams) messageView.getLayoutParams();
 
             // Image
         } else if (message.getType() == Message.Type.IMAGE) {
@@ -115,9 +121,9 @@ public class ChatAdapter extends ArrayAdapter<Message> {
             abstractView = imageView;
 
 
-            params = (RelativeLayout.LayoutParams) imageView.getLayoutParams();
+            mainViewParams = (RelativeLayout.LayoutParams) imageView.getLayoutParams();
 
-            imageView.setPadding(20, 10, 20, 10);
+            //imageView.setPadding(20, 10, 20, 10);
 
             StorageReference storageReference = DatabaseUtils.getStorageDatabase()
                     .getReferenceFromUrl(imageUrl);
@@ -137,7 +143,7 @@ public class ChatAdapter extends ArrayAdapter<Message> {
             ImageButton button = (ImageButton) convertView.findViewById(R.id.chat_audio);
             abstractView = button;
 
-            params = (RelativeLayout.LayoutParams) button.getLayoutParams();
+            mainViewParams = (RelativeLayout.LayoutParams) button.getLayoutParams();
 
             button.setPadding(20, 10, 20, 10);
 
@@ -182,19 +188,33 @@ public class ChatAdapter extends ArrayAdapter<Message> {
             Log.w(Constant.NEARBY_CHAT, "Wrong type of message");
         }
 
+        TextView dateView = (TextView) convertView.findViewById(R.id.chat_date);
+        String dateText = dateFormat.format(message.getDate());
+        dateView.setText(dateText);
+
+        RelativeLayout.LayoutParams dateViewParams = (RelativeLayout.LayoutParams) dateView.getLayoutParams();
+
         // custom style for a message sent by me
         if (message.getSenderId().equals(user.getUid())) {
-            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
+            mainViewParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            mainViewParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
+
+            dateViewParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            dateViewParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, 0);
 
             abstractView.setBackgroundResource(R.drawable.rounded_corner_sent);
 
         } else {
-            params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, 0);
+            mainViewParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            mainViewParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, 0);
+
+            dateViewParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            dateViewParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT, 0);
 
             abstractView.setBackgroundResource(R.drawable.rounded_corner_received);
         }
+
+        abstractView.setPadding(20, 10, 20, 10);
 
         return convertView;
     }
